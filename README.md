@@ -5,4 +5,4 @@
 This repository contains two directories:
 
 - [spotrod](spotrod) production code for astronomy,
-- [toyproblem](toyproblem) a toy problem benchmarking Python, Cython, and C implementations.
+- [toyproblem](toyproblem) a toy problem benchmarking Python, Cython, and C implementations of circleangle, the function calculating $\beta$.
