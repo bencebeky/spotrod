@@ -1,6 +1,6 @@
 # spotrod
 
-## Python code to model exoplanet transits with spot anomalies.  
+### Python code to model exoplanet transits with spot anomalies.  
 
 This repository contains two directories:
 

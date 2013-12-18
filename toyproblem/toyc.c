@@ -1,6 +1,6 @@
 #include <math.h>
 
-void circleangle(int n, double *r, double p, double z, double *answer) {
+void circleangle(double *r, double p, double z, int n, double *answer) {
 /* Calculate half central angle of the arc of circle of radius r
    (which concentrically spans the inside of the star during integration)
    that is inside a circle of radius p (planet)
@@ -11,11 +11,12 @@ void circleangle(int n, double *r, double p, double z, double *answer) {
    This version uses a loop over r.
 
    Input:
-     n    number of elements
      r[n] array
      p    scalar
      z    scalar
    They should all be non-negative, but there is no other restriction.
+
+     n    number of elements
 
    Output:
      answer[n]  one dimensional array, same size as r. */

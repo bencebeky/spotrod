@@ -1,8 +1,6 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include "toyc.h"
-#include <stdlib.h>
-#include <stdio.h>
 
 /* Docstrings */
 static char module_docstring[] = "  This module is a fast C implementation of a toy problem.";
@@ -66,7 +64,7 @@ static PyObject *circleangle_wrapper(PyObject *self, PyObject *args, PyObject *k
   PyArrayObject *answer = (PyArrayObject *)PyArray_FromDims(1, &n, NPY_DOUBLE);
 
   // Evaluate the model
-  circleangle(n, r_data, p, z, (double *)answer->data);
+  circleangle(r_data, p, z, n, (double *)answer->data);
 
   /* Clean up. */
   Py_DECREF(r_array);

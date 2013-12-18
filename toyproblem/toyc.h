@@ -1,1 +1,1 @@
-void circleangle(int, double*, double, double, double*);
+void circleangle(double*, double, double, int, double*);
