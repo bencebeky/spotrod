@@ -1,4 +1,5 @@
 # 
+# coding=utf8
 # Copyright 2013 Bence Béky
 #
 # This file is part of Spotrod.
