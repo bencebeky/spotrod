@@ -17,10 +17,10 @@
 # along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-all: toyc.so toycython.so
+all: toycython.so toyc.so
 
 toycython.so: toycython.pyx
 	python toycython-setup.py build_ext --inplace
 
-toyc.so: toyc.c toyc-wrapper.c toyc-setup.py
+toyc.so: toyc.c toyc.h toyc-wrapper.c toyc-setup.py
 	python toyc-setup.py build_ext --inplace

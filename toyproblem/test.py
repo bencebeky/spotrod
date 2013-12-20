@@ -23,15 +23,23 @@ from timeit import timeit;
 
 n = 50;
 
-time1 = timeit(stmt="toypython.circleangleloop(r, 0.4, 0.5)", setup="import numpy, toypython; r=numpy.linspace(0.0, 1.0, 10000)", number=n);
-time2 = timeit(stmt="toypython.circleanglemask(r, 0.4, 0.5)", setup="import numpy, toypython; r=numpy.linspace(0.0, 1.0, 10000)", number=n);
-time3 = timeit(stmt="toycython.circleangleloop(r, 0.4, 0.5)", setup="import numpy, toycython; r=numpy.linspace(0.0, 1.0, 10000)", number=n);
-time4 = timeit(stmt="toycython.circleanglemask(r, 0.4, 0.5)", setup="import numpy, toycython; r=numpy.linspace(0.0, 1.0, 10000)", number=n);
-time5 = timeit(stmt="toyc.circleangle(r=r, p=0.4, z=0.5)", setup="import numpy, toyc; r=numpy.linspace(0.0, 1.0, 10000)", number=n);
+r = ", numpy; r = numpy.linspace(0.0, 1.0, 10000)";
+arg = "(r, 0.1, 0.5)";
 
-print("Python loop: {0:5.2f} ms.".format(1000*time1/n));
-print("Python mask: {0:5.2f} ms.".format(1000*time2/n));
-print("Cython loop: {0:5.2f} ms.".format(1000*time3/n));
-print("Cython mask: {0:5.2f} ms.".format(1000*time4/n));
-print("C:           {0:5.2f} ms.".format(1000*time5/n));
+time1 = timeit(stmt="toypython.circleangleloop" + arg, setup="import toypython" + r, number=n);
+time2 = timeit(stmt="toypython.circleanglemask" + arg, setup="import toypython" + r, number=n);
+time3 = timeit(stmt="toypython.circleanglesorted" + arg, setup="import toypython" + r, number=n);
+time4 = timeit(stmt="toycython.circleangleloop" + arg, setup="import toycython" + r, number=n);
+time5 = timeit(stmt="toycython.circleanglemask" + arg, setup="import toycython" + r, number=n);
+time6 = timeit(stmt="toycython.circleanglesorted" + arg, setup="import toycython" + r, number=n);
+time7 = timeit(stmt="toyc.circleangleloop" + arg, setup="import toyc" + r, number=n);
+time8 = timeit(stmt="toyc.circleanglesorted" + arg, setup="import toyc" + r, number=n);
 
+print("Python loop:   {0:5.2f} ms.".format(1000*time1/n));
+print("Python mask:   {0:5.2f} ms.".format(1000*time2/n));
+print("Python sorted: {0:5.2f} ms.".format(1000*time3/n));
+print("Cython loop:   {0:5.2f} ms.".format(1000*time4/n));
+print("Cython mask:   {0:5.2f} ms.".format(1000*time5/n));
+print("Cython sorted: {0:5.2f} ms.".format(1000*time6/n));
+print("C      loop:   {0:5.2f} ms.".format(1000*time7/n));
+print("C      sorted: {0:5.2f} ms.".format(1000*time8/n));

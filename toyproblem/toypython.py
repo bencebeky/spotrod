@@ -88,3 +88,58 @@ def circleanglemask(r, p, z):
   answer[inside] = numpy.pi;
   answer[intersect] = numpy.arccos((numpy.power(r[intersect],2)+z*z-p*p)/(2*z*r[intersect]));
   return answer;
+
+def circleanglesorted(r, p, z):
+  """circleanglesorted(r, p, z)
+
+  Calculate half central angle of the arc of circle of radius r
+  (which concentrically spans the inside of the star during integration)
+  that is inside a circle of radius p (planet)
+  with separation of centers z.
+  This is a zeroth order homogeneous function, that is,
+  circleangle(alpha*r, alpha*p, alpha*z) = circleangle(r, p, z).
+
+  This version uses a loop over r with less comparisons.
+
+  Input:
+    r  one dimensional numpy array, must be increasing
+    p  scalar
+    z  scalar
+  They should all be non-negative, but there is no other restriction.
+
+  Output:
+    circleangle  one dimensional numpy array, same size as r
+  """
+  # If the circle arc of radius r is disjoint from the circular disk 
+  # of radius p, then the angle is zero.
+  answer = numpy.zeros_like(r);
+  pplusz = p+z;
+  zsquared = z*z;
+  psquared = p*p;
+  i = r.shape[0] - 1;
+  if (p > z):
+    # Planet covers center of star.
+    pminusz = p-z;
+    while (0 < i) & (r[i] > pplusz):
+      i -= 1;
+    while (0 < i) & (r[i] > pminusz):
+      ri = r[i];
+      answer[i] = numpy.arccos((ri*ri+zsquared-psquared)/(2*z*ri));
+      i -= 1;
+    while (0 < i):
+      answer[i] = numpy.pi;
+      i -= 1;
+  else:
+    # Planet does not cover center of star.
+    zminusp = z-p;
+    while (0 < i) & (r[i] > pplusz):
+      i -= 1;
+    while (0 < i) & (r[i] > zminusp):
+      ri = r[i];
+      answer[i] = numpy.arccos((ri*ri+zsquared-psquared)/(2*z*ri));
+      i -= 1;
+    while (0 < i):
+      answer[i] = 0;
+      i -= 1;
+  return answer;
+

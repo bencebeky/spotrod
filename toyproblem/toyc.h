@@ -15,4 +15,5 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 
-void circleangle(double*, double, double, int, double*);
+void circleangleloop(double*, double, double, int, double*);
+void circleanglesorted(double*, double, double, int, double*);
