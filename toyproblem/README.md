@@ -32,14 +32,14 @@ Each loop method is implemented two times: once executing all comparisons in the
 
 Other files in this directory are:
 
-COPYING The GNU General Public License;
-Makefile Makefile for generating toycython.so and toyc.so;
-README.md this file;
-test.py a Python script for benchmarking the different implementations;
-toyc-setup.py a Python script for compiling toyc.so
-toyc-wrapper.c C code wrapping toyc.c in the numpy C API;
-toyc.h headers for functions in toyc.c;
-toycython-setup.py a Python script for compiling toycython.so
+- [COPYING](COPYING) The GNU General Public License;
+- [Makefile](Makefile) Makefile for generating toycython.so and toyc.so;
+- [README.md](README.md) this file;
+- [test.py](test.py) a Python script for benchmarking the different implementations;
+- [toyc-setup.py](toyc-setup.py) a Python script for compiling toyc.so
+- [toyc-wrapper.c](toyc-wrapper.c) C code wrapping toyc.c in the numpy C API;
+- [toyc.h](toyc.h) headers for functions in toyc.c;
+- [toycython-setup.py](toycython-setup.py) a Python script for compiling toycython.so
 
 ## Compilation
 
