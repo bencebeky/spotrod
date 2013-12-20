@@ -1,18 +1,5 @@
 # spotrod/toyproblem
 
-This directory contains five different implementations of a simple function
-used in [spotrod](../spotrod), along with a Makefile and a test.py to do benchmarking. The purpose of this is to justify the choice of C for the final product. The five implementations are:
-
-toypython.py: in Python, using a loop or indexing arrays with Boolean masks;
-toycython.pyx: in Cython, using a loop or indexing arrays with Boolean masks;
-toyc.c: in C, using a loop.
-
-There are \*-setup.py files for the Cython and C version, as well toyc-wrapper.c for interfacing C with numpy.
- 
-## TODO
-
-For the upcoming Code Coffee presentation, I should create a short slide show and an ipython-notebook.
-
 ```
 Copyright 2013 Bence Béky
 
@@ -31,3 +18,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
 ```
+
+## Contents
+
+This directory contains eight different implementations of a simple function
+used in [spotrod](../spotrod), along with a Makefile and a test.py to do benchmarking. The purpose of this is to justify the choice of C for the final product. The eight implementations are:
+
+- [toypython.py](toypython.py) in Python, using a loop or indexing arrays with Boolean masks;
+- [toycython.pyx](toycython.pyx) in Cython, using a loop or indexing arrays with Boolean masks;
+- [toyc.c](toyc.c) in C, using a loop.
+
+Each loop method is implemented two times: once executing all comparisons in the loop core, and once saving on that assuming that the input array r is increasing.
+
+Other files in this directory are:
+
+COPYING The GNU General Public License;
+Makefile Makefile for generating toycython.so and toyc.so;
+README.md this file;
+test.py a Python script for benchmarking the different implementations;
+toyc-setup.py a Python script for compiling toyc.so
+toyc-wrapper.c C code wrapping toyc.c in the numpy C API;
+toyc.h headers for functions in toyc.c;
+toycython-setup.py a Python script for compiling toycython.so
+
+## Compilation
+
+To generate the modules toycython.so and toyc.so, run make without any arguments. To generate toypython.pyc, just import toypython from Python, it gets automatically compiled.
+
+## TODO
+
+For the upcoming Code Coffee presentation, I should create a short slide show and an ipython-notebook.
