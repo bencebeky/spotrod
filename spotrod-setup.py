@@ -19,8 +19,9 @@
 # along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-from distutils.core import setup;
-from distutils.extension import Extension;
-from Cython.Distutils import build_ext;
+from distutils.core import setup, Extension;
+import numpy.distutils.misc_util;
 
-setup(cmdclass = {'build_ext': build_ext}, ext_modules = [Extension("toycython", ["toycython.pyx"])]);
+c_ext = Extension("spotrod", ["spotrod-python-wrapper.c", "spotrod.c"], extra_compile_args=['-Ofast']);
+
+setup(ext_modules=[c_ext], include_dirs=numpy.distutils.misc_util.get_numpy_include_dirs());

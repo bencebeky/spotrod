@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf8
 # 
-# Copyright 2013 Bence Béky
+# Copyright 2013, 2014 Bence Béky
 #
 # This file is part of Spotrod.
 # 

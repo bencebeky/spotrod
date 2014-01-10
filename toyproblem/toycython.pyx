@@ -1,6 +1,6 @@
 # cython: profile=False
 # 
-# Copyright 2013 Bence Béky
+# Copyright 2013, 2014 Bence Béky
 #
 # This file is part of Spotrod.
 # 

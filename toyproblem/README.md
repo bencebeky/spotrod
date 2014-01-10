@@ -1,7 +1,8 @@
 # spotrod/toyproblem
+### A semi-analytic model for transits of spotted stars.
 
 ```
-Copyright 2013 Bence Béky
+Copyright 2013, 2014 Bence Béky
 
 This file is part of Spotrod.
 
@@ -32,18 +33,17 @@ Each loop method is implemented two times: once executing all comparisons in the
 
 Other files in this directory are:
 
-- [COPYING](COPYING) The GNU General Public License;
 - [Makefile](Makefile) Makefile for generating toycython.so and toyc.so;
 - [README.md](README.md) this file;
 - [test.py](test.py) a Python script for benchmarking the different implementations;
 - [toyc-setup.py](toyc-setup.py) a Python script for compiling toyc.so
 - [toyc-wrapper.c](toyc-wrapper.c) C code wrapping toyc.c in the numpy C API;
 - [toyc.h](toyc.h) headers for functions in toyc.c;
-- [toycython-setup.py](toycython-setup.py) a Python script for compiling toycython.so
+- [toycython-setup.py](toycython-setup.py) a Python script for compiling toycython.so.
 
 ## Compilation
 
-To generate the modules toycython.so and toyc.so, run make without any arguments. To generate toypython.pyc, just import toypython from Python, it gets automatically compiled.
+To generate the modules `toycython.so` and `toyc.so`, run `make` without any arguments. To generate `toypython.pyc`, just `import toypython` from Python, it gets automatically compiled.
 
 ## TODO
 
