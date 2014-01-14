@@ -35,7 +35,8 @@ Other files in this directory are:
 
 - [Makefile](Makefile) Makefile for generating toycython.so and toyc.so;
 - [README.md](README.md) this file;
-- [test.py](test.py) a Python script for benchmarking the different implementations;
+- [benchmark.py](benchmark.py) a Python script for benchmarking the different implementations;
+- [test.py](test.py) sanity check: a Python script for comparing the different implementations;
 - [toyc-setup.py](toyc-setup.py) a Python script for compiling toyc.so
 - [toyc-wrapper.c](toyc-wrapper.c) C code wrapping toyc.c in the numpy C API;
 - [toyc.h](toyc.h) headers for functions in toyc.c;

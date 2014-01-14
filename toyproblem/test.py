@@ -19,27 +19,24 @@
 # along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-from timeit import timeit;
+import numpy;
+import toypython;
+import toycython;
+import toyc;
+from matplotlib import pyplot;
+pyplot.ion();
 
-n = 50;
+r = numpy.linspace(0.0, 1.0, 100);
 
-r = ", numpy; r = numpy.linspace(0.0, 1.0, 10000)";
-arg = "(r, 0.1, 0.5)";
+test1 = toypython.circleanglesorted;
+test2 = toyc.circleanglesorted;
 
-time1 = timeit(stmt="toypython.circleangleloop" + arg, setup="import toypython" + r, number=n);
-time2 = timeit(stmt="toypython.circleanglemask" + arg, setup="import toypython" + r, number=n);
-time3 = timeit(stmt="toypython.circleanglesorted" + arg, setup="import toypython" + r, number=n);
-time4 = timeit(stmt="toycython.circleangleloop" + arg, setup="import toycython" + r, number=n);
-time5 = timeit(stmt="toycython.circleanglemask" + arg, setup="import toycython" + r, number=n);
-time6 = timeit(stmt="toycython.circleanglesorted" + arg, setup="import toycython" + r, number=n);
-time7 = timeit(stmt="toyc.circleangleloop" + arg, setup="import toyc" + r, number=n);
-time8 = timeit(stmt="toyc.circleanglesorted" + arg, setup="import toyc" + r, number=n);
+def test(p, z):
+  pyplot.figure();
+  testdata1 = test1(r, p, z);
+  testdata2 = test2(r, p, z);
+  pyplot.plot(r, testdata1, "r-", r, testdata2, "b-");
+  print numpy.max(numpy.abs(testdata1 - testdata2));
 
-print("Python loop:   {0:5.2f} ms.".format(1000*time1/n));
-print("Python mask:   {0:5.2f} ms.".format(1000*time2/n));
-print("Python sorted: {0:5.2f} ms.".format(1000*time3/n));
-print("Cython loop:   {0:5.2f} ms.".format(1000*time4/n));
-print("Cython mask:   {0:5.2f} ms.".format(1000*time5/n));
-print("Cython sorted: {0:5.2f} ms.".format(1000*time6/n));
-print("C      loop:   {0:5.2f} ms.".format(1000*time7/n));
-print("C      sorted: {0:5.2f} ms.".format(1000*time8/n));
+test(0.1, 0.5);
+test(0.3, 0.2);
