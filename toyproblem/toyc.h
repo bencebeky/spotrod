@@ -17,3 +17,4 @@ along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 
 void circleangleloop(double*, double, double, int, double*);
 void circleanglesorted(double*, double, double, int, double*);
+int mybsearch(double*, double, int);

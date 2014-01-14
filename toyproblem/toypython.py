@@ -99,7 +99,7 @@ def circleanglesorted(r, p, z):
   This is a zeroth order homogeneous function, that is,
   circleangle(alpha*r, alpha*p, alpha*z) = circleangle(r, p, z).
 
-  This version uses a loop over r with less comparisons.
+  This version uses a binary search on the sorted r.
 
   Input:
     r  one dimensional numpy array, must be increasing
@@ -112,34 +112,18 @@ def circleanglesorted(r, p, z):
   """
   # If the circle arc of radius r is disjoint from the circular disk 
   # of radius p, then the angle is zero.
-  answer = numpy.zeros_like(r);
-  pplusz = p+z;
-  zsquared = z*z;
-  psquared = p*p;
-  i = r.shape[0] - 1;
+  answer = numpy.empty_like(r);
   if (p > z):
     # Planet covers center of star.
-    pminusz = p-z;
-    while (0 < i) & (r[i] > pplusz):
-      i -= 1;
-    while (0 < i) & (r[i] > pminusz):
-      ri = r[i];
-      answer[i] = numpy.arccos((ri*ri+zsquared-psquared)/(2*z*ri));
-      i -= 1;
-    while (0 < i):
-      answer[i] = numpy.pi;
-      i -= 1;
+    a, b = numpy.searchsorted(r, [p-z, p+z], side="right");
+    answer[:a] = numpy.pi;
+    answer[a:b] = numpy.arccos((r[a:b]*r[a:b]+z*z-p*p)/(2*z*r[a:b]));
+    answer[b:] = 0.0;
   else:
     # Planet does not cover center of star.
-    zminusp = z-p;
-    while (0 < i) & (r[i] > pplusz):
-      i -= 1;
-    while (0 < i) & (r[i] > zminusp):
-      ri = r[i];
-      answer[i] = numpy.arccos((ri*ri+zsquared-psquared)/(2*z*ri));
-      i -= 1;
-    while (0 < i):
-      answer[i] = 0;
-      i -= 1;
+    a, b = numpy.searchsorted(r, [z-p, z+p], side="right");
+    answer[:a] = 0.0;
+    answer[a:b] = numpy.arccos((r[a:b]*r[a:b]+z*z-p*p)/(2*z*r[a:b]));
+    answer[b:] = 0.0;
   return answer;
 

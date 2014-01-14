@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include "toyc.h"
 #include <math.h>
 
 void circleangleloop(double *r, double p, double z, int n, double *answer) {
@@ -70,7 +71,10 @@ void circleanglesorted(double *r, double p, double z, int n, double *answer) {
    This is a zeroth order homogeneous function, that is,
    circleangle(alpha*r, alpha*p, alpha*z) = circleangle(r, p, z).
 
-   This version uses a loop over r with less comparisons.
+   This version uses a binary search. It might, however, not be faster
+   than using direct comparisons: in the loop, we need to compare 
+   i to a and b and n (or 0) all the times. Is integer comparison
+   faster than double? Is it worth the overhead of the binary search?
 
    Input:
      r[n] array, must be sorted.
@@ -84,44 +88,55 @@ void circleanglesorted(double *r, double p, double z, int n, double *answer) {
      answer[n]  one dimensional array, same size as r. */
   /* If the circle arc of radius r is disjoint from the circular disk 
      of radius p, then the angle is zero. */
-  int i;
-  double pplusz = p+z;
+  int i, a, b;
   double zsquared = z*z;
   double psquared = p*p;
   double ri;
-  i = n - 1;
   if (p > z) {
     // Planet covers center of star.
-    double pminusz = p-z;
-    while ((0 < i) && (*(r+i) > pplusz)) {
-      *(answer+i) = 0;
-      i -= 1;
-    }
-    while ((0 < i) && (*(r+i) > pminusz)) {
-      ri = r[i];
-      *(answer+i) = acos((ri*ri+zsquared-psquared)/(2*z*ri));
-      i -= 1;
-    }
-    while (0 < i) {
+    a = mybsearch(r, p-z, n);
+    b = mybsearch(r, p+z, n);
+    for(i=0; i<a; i++)
       *(answer+i) = M_PI;
-      i -= 1;
-    }
-  } else {
-    // Planet does not cover center of star.
-    double zminusp = z-p;
-    while ((0 < i) && (*(r+i) > pplusz)) {
-      *(answer+i) = 0;
-      i -= 1;
-    }
-    while ((0 < i) && (*(r+i) > zminusp)) {
+    for(; i<b; i++) {
       ri = *(r+i);
       *(answer+i) = acos((ri*ri+zsquared-psquared)/(2*z*ri));
-      i -= 1;
     }
-    while (0 < i) {
-      *(answer+i) = 0;
-      i -= 1;
+    for(; i<n; i++)
+      *(answer+i) = 0.0;
+  } else {
+    // Planet does not cover center of star.
+    a = mybsearch(r, z-p, n);
+    b = mybsearch(r, z+p, n);
+    for(i=0; i<a; i++)
+      *(answer+i) = 0.0;
+    for(; i<b; i++) {
+      ri = *(r+i);
+      *(answer+i) = acos((ri*ri+zsquared-psquared)/(2*z*ri));
     }
+    for(; i<n; i++)
+      *(answer+i) = 0.0;
   }
   return;
+}
+
+int mybsearch(double *array, double val, int n) {
+/* Return the smallest of i = 0, 1, ..., n such that val < *(array+i),
+with the convention that *(array+n) = inf. */
+  if (val < *array)
+    return 0;
+  if (*(array+n-1) <= val)
+    return n;
+  int a = 0, b = n-1, c;
+  /* From this point on, we always have
+  0 <= a <= c <= b <= n-1,
+  *(array+a) <= val, and val < *(array+b). */
+  while (a+1 < b) {
+    c = (a+b)/2;
+    if (val < *(array+c))
+      b = c;
+    else
+      a = c;
+  }
+  return b;
 }
