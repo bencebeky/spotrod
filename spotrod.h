@@ -19,3 +19,4 @@ void integratetransit(int, int, int, double*, double*, double*, double, double, 
 void elements(double*, double, double, double, double, int, double*, double*);
 void circleangle(double*, double, double, int, double*);
 void ellipseangle(double*, double, double, int, double*);
+int mybsearch(double*, double, int);
