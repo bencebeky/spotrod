@@ -21,19 +21,18 @@ along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 #include "spotrod.h"
 
 void integratetransit(int m, int n, int k, double *planetx, double *planety, double *z, double p, double ootflux0, double *r, double *f, double *spotx, double *spoty, double *spotradius, double *spotcontrast, double *planetangle, double *answer) {
-  /* Calculate integrated flux of a star if it is transited by a planet
+/* Calculate integrated flux of a star if it is transited by a planet
   of radius p*R_star, at projected position (planetx, planety)
   in R_star units.
   Flux is normalized to out-of-transit flux.
   This algorithm works by integrating over concentric rings,
-  the number of which is controlled by n.
-  Use n=1000 for fair results.
+  the number of which is controlled by n. Use n=1000 for fair results.
   Planetx is the coordinate perpendicular to the transit chord
   normalized to stellar radius units, and planety is the one
   parallel to the transit chord, in a fashion such that it increases
   throughout the transit.
-  We assume that spotx, spoty, spotradius and spotcontrast have the same
-  dimension, that is, the number of the spots.
+  We assume that the one-dimensional arrays spotx, spoty, spotradius
+  and spotcontrast have the same length: the number of the spots.
 
   Input parameters:
 
@@ -41,24 +40,24 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
   n             number of concentric rings
   k             number of spots
   planet[xy]    planetary center coordinates in stellar radii in sky-projected coordinate system [m]
-  z             planetary center distance from stellar disk center in stellar radii (cached)     [m]
+  z             planetary center distance from stellar disk center in stellar radii     (cached) [m]
   p             planetary radius in stellar radii, scalar
-  ootflux0      ootflux if there was no spot (only used if k=0) (cached)
-  r             radii of integration annuli in stellar radii (cached) [n]
-  f             2.0 * limb darkening * width of annulii (cached) [n]
-  spotx, spoty  spot center coordinates in stellar radii in sky-projected coordinate system   [k]
-  spotradius    spot radius in stellar radii [k]
-  spotcontrast  spot contrast [k]
-  planetangle   value of [for circleangle(r, p, z[i]) in xrange(m)] (cached) [m,n]
+  ootflux0      ootflux if there was no spot (only used if k=0)                         (cached)
+  r             radii of integration annuli in stellar radii, non-decreasing            (cached) [n]
+  f             2.0 * limb darkening at r[i] * width of annulus i                       (cached) [n]
+  spotx, spoty  spot center coordinates in stellar radii in sky-projected coordinate system      [k]
+  spotradius    spot radius in stellar radii                                                     [k]
+  spotcontrast  spot contrast                                                                    [k]
+  planetangle   value of [circleangle(r, p, z[i]) for i in xrange(m)]                 (cached) [m,n]
 
   (cached) means the parameter is redundant, and could be calculated from other parameters,
-  but storing it speeds up iterative execution.
+  but storing it and passing it to this routine speeds up iterative execution (fit or MCMC).
   Note that we do not take limb darkening coefficients, all we need is ootflux0 and f.
   In fact, ootflux0 is only used if k=0 (no spots).
 
   Output parameters:
 
-  answer        model lightcurve, with oot=1.0 [m] */
+  answer        model lightcurve, with oot=1.0                                                [m] */
   // Running indices for m, n, k, respectively.
   int M, N, K;
   // Out of transit flux is ootflux0 if k==0, and we have to sweat to calculate it otherwise.
@@ -87,12 +86,11 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
           *answer += *(r+N) * (M_PI - *(planetangle + n*M + N)) * *(f+N);
         }
         // Normalize by trapezoid width and by ootflux.
-        //*answer *= 2.0 / (n * ootflux0);
         *answer /= ootflux0;
       } else {
         *answer = 1.0;
       }
-      // Advance pointer for performance.
+      // Advance pointer instead of using *(answer+i) all the times, for performance.
       answer++;
     }
     // Restore pointer.
@@ -105,6 +103,7 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
     spotcenterdistance = malloc(((k+1) * (n+1) - 1) * sizeof(double));
     spotangle = spotcenterdistance + k;
     values = spotcenterdistance + k * (n+1);
+    // Loop over spots: fill up some arrays that do not depend on z.
     for (K=0; K<k; K++) {
       spotcenterdistancesquared = (*(spotx+K) * *(spotx+K) + *(spoty+K) * *(spoty+K)) * (1.0 - *(spotradius+K) * *(spotradius+K));
       *(spotcenterdistance+K) = sqrt(spotcenterdistancesquared);
@@ -112,7 +111,7 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
       These values do not depend on z, that's why we cache them for all spots. */
       ellipseangle(r, *(spotradius+K), *(spotcenterdistance+K), n, spotangle + K*n);
     }
-    // Evaluate the integrand on the mash for ootflux using the trapezoid method.
+    // Evaluate the integral for ootflux using the trapezoid method.
     ootflux = 0.0;
     for (N=0; N<n; N++) {
       trapeze = M_PI;
@@ -121,15 +120,17 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
       }
       ootflux += trapeze * *(r+N) * *(f+N);
     }
-    //ootflux *= 2.0 / n;
+    // Loop over observation times and calculate answer.
     for (M=0; M<m; M++) {
       // Transit?
       if (*(z+M) < 1.0 + p) {
-        // Initialize values with non-spot values.
+        /* The values array first stores the half arc length integrated contrast for no spots
+        that we calculate in the next three lines. Later we add the spot contributions below,
+        finally multipy by r*f and sum up. */
         for (N=0; N<n; N++) {
           *(values+N) = M_PI - *(planetangle + n*M + N);
         }
-        // Cycle through spots.
+        // Cycle through spots and add their contributions.
         for (K=0; K<k; K++) {
           // Calculate distance of spot center and planet center for this moment.
           d = sqrt(pow(*(planetx+M) - *(spoty+K) * sqrt(1.0 - *(spotradius+K) * *(spotradius+K)), 2.0) + pow(*(planety+M) - *(spotx+K) * sqrt(1.0 - *(spotradius+K) * *(spotradius+K)), 2.0));
@@ -141,13 +142,11 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
           }
           // Cycle through annuli.
           for (N=0; N<n; N++) {
-            /* Evaluate the integrand on the mesh.
+            /* Evaluate the integrand on r[N].
             The geometry is described by planetspotangle (function of z(M))
             planetangle (function of r(N) and z(M), 2D array),
             and spotangle (function of r(N), does not depend on z, calculated above).
-            For each value of r, there are four cases.
-            The values array first stores the half arc length integrated contrast for no spots,
-            then we add the spot contributions below, then multipy by stuff, and finally sum up. */
+            For each value of r, there are five cases. */
             // Case 1: planet and spot arcs are disjoint, contributions add up.
             if (planetspotangle > *(planetangle + M*n + N) + *(spotangle + K*n + N)) {
               *(values+N) += (*(spotcontrast+K)-1.0) * *(spotangle + K*n + N);
@@ -169,27 +168,31 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
               //*(values+N) += 0.0;
           }
         }
-        /* Now we multiply the half arc length integrated contrast by 2rf
+        /* Now we multiply the half arc length integrated contrast by r*f
         to get the integrand, and sum it up right away. */
         *answer = 0.0;
         for (N=0; N<n; N++) {
           *answer += *(r+N) * *(f+N) * *(values+N);
         }
-        //*answer *= 2.0/(n*ootflux);
+        // Finally, we normalize with ootflux.
         *answer /= ootflux;
       } else {
+        // If not transit:
         *answer = 1.0;
       }
+      // Advance pointer instead of using *(answer+i) all the times, for performance.
       answer++;
     }
+    // Restore pointer.
     answer -= m;
+    // Free spotcenterdistance, spotangle, and values, that live side by side.
     free(spotcenterdistance);
   }
   return;
 }
 
 void elements(double *deltaT, double period, double a, double k, double h, int n, double *eta, double *xi) {
-  /* Calculate orbital elements eta and xi.
+/* Calculate orbital elements eta and xi.
 
   Input:
 
@@ -201,7 +204,7 @@ void elements(double *deltaT, double period, double a, double k, double h, int n
 
   Output:
 
-  eta, xi  eta and xi [n] at times deltaT. */
+  eta, xi  eta and xi at times deltaT, [n] */
   // Eccentricity and oblateness.
   double e = sqrt(k*k+h*h);
   double l = 1 - sqrt(1-k*k-h*h);
@@ -251,36 +254,42 @@ void elements(double *deltaT, double period, double a, double k, double h, int n
 
 void circleangle(double *r, double p, double z, int n, double *answer) {
 /* Calculate half central angle of the arc of circle of radius r
-   (which concentrically spans the inside of the star during integration)
-   that is inside a circle of radius p (planet)
-   with separation of centers z.
-   This is a zeroth order homogeneous function, that is,
-   circleangle(alpha*r, alpha*p, alpha*z) = circleangle(r, p, z).
+  (which concentrically spans the inside of the star during integration)
+  that is inside a circle of radius p (planet)
+  with separation of centers z.
+  This is a zeroth order homogeneous function, that is,
+  circleangle(alpha*r, alpha*p, alpha*z) = circleangle(r, p, z).
 
-   This version uses a loop over r.
+  This version uses a binary search. It is only marginally faster
+  than using direct comparisons: in the loop, we need to compare 
+  i to a and b and n (or 0) n times. A direct loop with comparisons
+  would be more expensive by one indirect addressing and by a double
+  comparison instead of the integer one (assuming, of course, that the
+  input array is sorted, and we only compare to the value that delimits
+  the next case, not testing for all cases in each iteration). This is
+  barely worth the overhead of the binary search, but is so much cooler.
 
-   Input:
-     n    number of elements
-     r    radius of big circle [n]
-     p    radius of other circle
-     z    separation of centers.
-   They should all be non-negative, but there is no other restriction.
+  Input:
+    r       array, non-negative, non-decreasing [n]
+    p       scalar, non-negative
+    z       scalar, non-negative
+    n       number of elements
 
-   Output:
-     answer[n]  one dimensional array, same size as r. */
+  Output:
+    answer  one dimensional array [n] */
   /* If the circle arc of radius r is disjoint from the circular disk 
      of radius p, then the angle is zero. */
-  int i, bound;
+  int i, a, b;
   double zsquared = z*z;
   double psquared = p*p;
   double ri;
   if (p > z) {
     // Planet covers center of star.
-    bound = mybsearch(r, p-z, n);
-    for(i=0; i<bound; i++)
+    a = mybsearch(r, p-z, n);
+    b = mybsearch(r, p+z, n);
+    for(i=0; i<a; i++)
       *(answer+i) = M_PI;
-    bound = mybsearch(r, p+z, n);
-    for(; i<bound; i++) {
+    for(; i<b; i++) {
       ri = *(r+i);
       *(answer+i) = acos((ri*ri+zsquared-psquared)/(2*z*ri));
     }
@@ -288,11 +297,11 @@ void circleangle(double *r, double p, double z, int n, double *answer) {
       *(answer+i) = 0.0;
   } else {
     // Planet does not cover center of star.
-    bound = mybsearch(r, z-p, n);
-    for(i=0; i<bound; i++)
+    a = mybsearch(r, z-p, n);
+    b = mybsearch(r, z+p, n);
+    for(i=0; i<a; i++)
       *(answer+i) = 0.0;
-    bound = mybsearch(r, z+p, n);
-    for(; i<bound; i++) {
+    for(; i<b; i++) {
       ri = *(r+i);
       *(answer+i) = acos((ri*ri+zsquared-psquared)/(2*z*ri));
     }
@@ -305,49 +314,50 @@ void circleangle(double *r, double p, double z, int n, double *answer) {
 void ellipseangle(double *r, double a, double z, int n, double *answer) {
 /*  Calculate half central angle of the arc of circle of radius r
   (which concentrically spans the inside of the star during integration)
-  that is inside an ellipse of semi-axes a and b with separation of centers z.
-  b is calculated from a and z, assuming projection of a circle of radius a
-  on the surface of a unit sphere.
+  that is inside an ellipse of semi-major axis a with separation of centers z.
   The orientation of the ellipse is so that the center of the circle lies on 
   the continuation of the minor axis. This is the orientation if the ellipse
   is a circle on the surface of a sphere viewed in projection, and the circle
   is concentric with the projection of the sphere.
-  This is a zeroth order homogeneous function, that is,
-  ellispeangle(alpha*r, alpha*a, alpha*z) = ellipseangle(r, a, z).
+  b is calculated from a and z, assuming projection of a circle of radius a
+  on the surface of a unit sphere. If a and z are not compatible, a is clipped.
+  This is not zeroth order homogeneous function, because it calculates b based
+  on a circle of radius a living on the surface of the unit sphere.
   r is an array, a, and z are scalars. They should all be non-negative.
   We store the result on the n double positions starting with *answer.
   
   Input:
 
   r        radius of circle [n]
-  a        semi-major axis of ellipse
-  b        semi-minor axis of ellipse
-  z        distance between centers of circle and ellipse
-           (center of circle lies on the straight line
-           of the minor axis of the ellipse)
+  a        semi-major axis of ellipse, non-negative
+  z        distance between centers of circle and ellipse,
+           non-negative and at most 1
   n        size of array a
 
   Output:
 
   answer   half central angle of arc of circle that lies inside ellipes [n]. */
   int i;
-  // Degenerate case or unphysical input parameters.
-  if ((a==0) || (z*z + a*a >= 1.0)) {
+  // Unphysical case: clip a.
+  if (z*z + a*a >= 1.0) {
+    a = sqrt(1-z*z);
+  }
+  // Degenerate case.
+  if ((a==0.0) || (z==1.0)) {
     for (i=0; i<n; i++) {
       *(answer+i) = 0.0;
     }
-  // Concentric case.
   } else if (z==0) {
+  // Concentric case.
     for (i=0; i<n; i++) {
       if (*(r+i) < a)
         *(answer+i) = M_PI;
       else
         *(answer+i) = 0.0;
     }
-  // Case of ellipse.
   } else {
+  // Case of ellipse.
     double b = a * sqrt(1.0-z*z/(1-a*a));
-    // double bminusz = b-z;
     double zsquared = z*z;
     double asquared = a*a;
     double A = pow(a/b,2.0) - 1.0;
