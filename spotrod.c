@@ -100,7 +100,7 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
     //spotangle = malloc(k * n * sizeof(double));
     //values = malloc(n * sizeof(double));
     // Instead, do a single malloc for speed.
-    spotcenterdistance = malloc(((k+1) * (n+1) - 1) * sizeof(double));
+    spotcenterdistance = malloc((k + k*n + n) * sizeof(double));
     spotangle = spotcenterdistance + k;
     values = spotcenterdistance + k * (n+1);
     // Loop over spots: fill up some arrays that do not depend on z.
@@ -277,36 +277,55 @@ void circleangle(double *r, double p, double z, int n, double *answer) {
 
   Output:
     answer  one dimensional array [n] */
+  /* For speed, we increment answer and r (possibly faster than
+  adding i in each iteration), and restore it at the end. The compiler
+  should not actually compile the restore operation if the value of
+  the variable is not used any more. */
   /* If the circle arc of radius r is disjoint from the circular disk 
      of radius p, then the angle is zero. */
   int i, a, b;
   double zsquared = z*z;
   double psquared = p*p;
-  double ri;
   if (p > z) {
     // Planet covers center of star.
     a = mybsearch(r, p-z, n);
     b = mybsearch(r, p+z, n);
-    for(i=0; i<a; i++)
-      *(answer+i) = M_PI;
-    for(; i<b; i++) {
-      ri = *(r+i);
-      *(answer+i) = acos((ri*ri+zsquared-psquared)/(2*z*ri));
+    for(i=0; i<a; i++) {
+      *answer = M_PI;
+      answer++;
     }
-    for(; i<n; i++)
-      *(answer+i) = 0.0;
+    r += i;
+    for(; i<b; i++) {
+      *answer = acos(((*r)*(*r)+zsquared-psquared)/(2*z*(*r)));
+      answer++;
+      r++;
+    }
+    r -= i;
+    for(; i<n; i++) {
+      *answer = 0.0;
+      answer++;
+    }
+    answer -= i;
   } else {
     // Planet does not cover center of star.
     a = mybsearch(r, z-p, n);
     b = mybsearch(r, z+p, n);
-    for(i=0; i<a; i++)
-      *(answer+i) = 0.0;
-    for(; i<b; i++) {
-      ri = *(r+i);
-      *(answer+i) = acos((ri*ri+zsquared-psquared)/(2*z*ri));
+    for(i=0; i<a; i++) {
+      *answer = 0.0;
+      answer++;
     }
-    for(; i<n; i++)
-      *(answer+i) = 0.0;
+    r += i;
+    for(; i<b; i++) {
+      *answer = acos(((*r)*(*r)+zsquared-psquared)/(2*z*(*r)));
+      answer++;
+      r++;
+    }
+    r -= i;
+    for(; i<n; i++) {
+      *answer = 0.0;
+      answer++;
+    }
+    answer -= i;
   }
   return;
 }
@@ -338,63 +357,84 @@ void ellipseangle(double *r, double a, double z, int n, double *answer) {
 
   answer   half central angle of arc of circle that lies inside ellipes [n]. */
   int i;
-  // Unphysical case: clip a.
-  if (z*z + a*a >= 1.0) {
-    a = sqrt(1-z*z);
-  }
   // Degenerate case.
-  if ((a==0.0) || (z==1.0)) {
+  if ((a<=0.0) || (z>=1.0)) {
     for (i=0; i<n; i++) {
-      *(answer+i) = 0.0;
+      *answer = 0.0;
+      answer++;
     }
-  } else if (z==0) {
+    answer -= i;
+  } else if (z<=0) {
   // Concentric case.
-    for (i=0; i<n; i++) {
-      if (*(r+i) < a)
-        *(answer+i) = M_PI;
-      else
-        *(answer+i) = 0.0;
+    int bound = mybsearch(r, a, n);
+    for(i=0; i<bound; i++) {
+      *answer = M_PI;
+      answer++;
     }
+    for(; i<n; i++) {
+      *answer = 0.0;
+      answer++;
+    }
+    answer -= i;
+  } else if (a*a + z*z >= 1.0) {
+  // Unphysical case: clip a. Now b=0.
+    a = sqrt(1-z*z);
+    int bound = mybsearch(r, z, n);
+    for(i=0; i<bound; i++) {
+      *answer = 0.0;
+      answer++;
+    }
+    r += i;
+    for(; i<n; i++) {
+      *answer = acos(z/(*r));
+      answer++;
+      r++;
+    }
+    answer -= i;
+    r -= i;
   } else {
   // Case of ellipse.
     double b = a * sqrt(1.0-z*z/(1-a*a));
     double zsquared = z*z;
     double asquared = a*a;
-    double A = pow(a/b,2.0) - 1.0;
-    double ri, yp, halfD;
+    // Calculate A based on a and z to mitigate rounding errors.
+    //double A = pow(a/b,2.0) - 1.0;
+    double A = zsquared / (1.0 - asquared - zsquared);
     /* First, go through all the cases where the ellipse covers C_r.
     If there is no such r, then bound=0, nothing happens. */
     int bound = mybsearch(r, b-z, n);
-    for(i=0; i<bound; i++)
-        *(answer+i) = M_PI;
+    for(i=0; i<bound; i++) {
+      *answer = M_PI;
+      answer++;
+    }
     /* Now go through all the cases when C_r does not reach out to the ellipse.
     Again, the loop body might not get executed. */
     bound = mybsearch(r, z-b, n);
-    for(; i<bound; i++)
-      *(answer+i) = 0.0;
+    for(; i<bound; i++) {
+      *answer = 0.0;
+      answer++;
+    }
     /* Now take care of the cases where C_r and the ellipse intersect. z_crit = 1-a^2. */
     if (z < 1.0 - a*a)
       bound = mybsearch(r, z+b, n);
     else
       bound = n;
+    r += i;
     for(; i<bound; i++) {
       // If not disjoint from the outside.
-      // Try to solve for y_+.
-      ri = *(r+i);
-      halfD = z*z - A*(ri*ri - zsquared - asquared);
-      // We always have halfD >= 0.0.
-      yp = (-z + sqrt(halfD))/A;
-      // If y_+ > -b, then we have real intersection points.
-      if (yp > -b) {
-        *(answer+i) = acos((z - yp)/ri);
-      } else {
-      // If y_+ <= -b, then C_r contains the ellipse. This should never happen!
-        printf("C_r contains the ellipse %d\n", i);
-        *(answer+i) = 0.0;
-      }
+      // We must have y_+ > -b now.
+      //yp = (-z + sqrt(z*z - A*((*r)*(*r) - zsquared - asquared)))/A;
+      //*answer = acos((z - yp)/(*r));
+      *answer = acos((z - (-z + sqrt(z*z - A*((*r)*(*r) - zsquared - asquared)))/A)/(*r));
+      answer++;
+      r++;
     }
-    for(; i<n; i++)
-      *(answer+i) = 0.0;
+    r -= i;
+    for(; i<n; i++) {
+      *answer = 0.0;
+      answer++;
+    }
+    answer -= i;
   }
   return;
 }
