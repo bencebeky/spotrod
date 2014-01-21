@@ -19,9 +19,18 @@
 # along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-from distutils.core import setup, Extension;
+import distutils.core;
 import numpy.distutils.misc_util;
 
-c_ext = Extension("spotrod", ["spotrod-python-wrapper.c", "spotrod.c"], extra_compile_args=['-Ofast']);
+name = "spotrod";
+version = "1.0";
+description = "A semi-analytic model for transits of spotted stars";
+author = "Bence Béky";
+author_email = "zsebkecske@gmail.com"
+maintainer = author;
+maintainer_email = author_email;
+url = "https://github.com/bencebeky/spotrod";
+ext_modules = [distutils.core.Extension("spotrod", ["spotrod-python-wrapper.c", "spotrod.c"], extra_compile_args=['-Ofast'])];
+include_dirs = numpy.distutils.misc_util.get_numpy_include_dirs();
 
-setup(ext_modules=[c_ext], include_dirs=numpy.distutils.misc_util.get_numpy_include_dirs());
+distutils.core.setup(name = name, version = version, description = description, author = author, author_email = author_email, maintainer = maintainer, maintainer_email = maintainer_email, url = url, ext_modules = ext_modules, include_dirs = include_dirs);
