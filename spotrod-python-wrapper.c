@@ -25,6 +25,8 @@ static char module_docstring[] =
 "  the spotrod lightcurve model.\n"
 "  Source is available at https://github.com/bencebeky/spotrod";
 static char integratetransit_docstring[] = 
+" answer = integratetransit(planetx, planety, z, p, ootflux0, r, f, spotx, spoty, spotradius, spotcontrast, planetangle)\n"
+"\n"
 "  Calculate integrated flux of a star if it is transited by a planet\n"
 "  of radius p*R_star, at projected position (planetx, planety)\n"
 "  in R_star units.\n"
@@ -63,6 +65,8 @@ static char integratetransit_docstring[] =
 "\n"
 "  answer        model lightcurve, with oot=1.0                                                [m]";
 static char elements_docstring[] =
+" eta, xi = elements(deltaT, period, a, k, h)\n"
+"\n"
 "  Calculate orbital elements eta and xi.\n"
 "\n"
 "  Input:\n"
@@ -77,6 +81,8 @@ static char elements_docstring[] =
 "\n"
 "  eta, xi  eta and xi at times deltaT, [n]";
 static char circleangle_docstring[] =
+" answer = circleangle(r, p, z)\n"
+"\n"
 "  Calculate half central angle of the arc of circle of radius r\n"
 "  (which concentrically spans the inside of the star during integration)\n"
 "  that is inside a circle of radius p (planet)\n"
@@ -102,6 +108,8 @@ static char circleangle_docstring[] =
 "  Output:\n"
 "    answer  one dimensional array [n]";
 static char ellipseangle_docstring[] =
+" answer = ellipseangle(r, a, z)\n"
+"\n"
 "  Calculate half central angle of the arc of circle of radius r\n"
 "  (which concentrically spans the inside of the star during integration)\n"
 "  that is inside an ellipse of semi-major axis a with separation of centers z.\n"
