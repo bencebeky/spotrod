@@ -181,7 +181,7 @@ p0 += numpy.random.normal(scale=1e-3, size=p0.shape);
 sampler = PTSampler(ntemps, nwalkers, ndim, logl, logp);
 
 # Run sampler.
-pos, prob, state = sampler.run_mcmc(p0, 1000);
+pos, prob, state = sampler.run_mcmc(p0, niter);
 
 # Take a view of the T=0 chain.
 zerotemp = sampler.chain[0];
