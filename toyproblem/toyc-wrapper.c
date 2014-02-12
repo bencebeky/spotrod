@@ -20,7 +20,8 @@ along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 #include "toyc.h"
 
 /* Docstrings */
-static char module_docstring[] = "  This module is a fast C implementation of a toy problem.";
+static char module_docstring[] = 
+"  This module is a fast C implementation of a toy problem.";
 static char circleangleloop_docstring[] = 
 "  circleangleloop(r, p, z)\n"
 "  Calculate half central angle of the arc of circle of radius r\n"
@@ -52,7 +53,8 @@ PyMODINIT_FUNC inittoyc(void) {
 }
 
 /* Wrapper function for circleangleloop. */
-static PyObject *circleangleloop_wrapper(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *circleangleloop_wrapper(PyObject *self, PyObject *args,
+                                         PyObject *kwds) {
   /* Input arguments. */
   double p, z;
   PyObject *r_obj;
@@ -61,22 +63,20 @@ static PyObject *circleangleloop_wrapper(PyObject *self, PyObject *args, PyObjec
   static char *kwlist[] = {"r", "p", "z", NULL};
 
   /* Parse the input tuple */
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "Odd", kwlist, &r_obj, &p, &z))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "Odd", kwlist, 
+                                   &r_obj, &p, &z))
     return NULL;
 
-  /* Check argument dimensions and types. */
-  if (PyArray_NDIM(r_obj) != 1 || PyArray_TYPE(r_obj) != PyArray_DOUBLE) {
-    PyErr_SetString(PyExc_ValueError, "Argument dimensions or types not correct.");
-    return NULL; 
-  }
-
-  /* Interpret the input objects as numpy arrays. */
+  /* Interpret the input object as a numpy array. */
   PyObject *r_array = PyArray_FROM_OTF(r_obj, NPY_DOUBLE, NPY_IN_ARRAY);
 
-  /* If that didn't work, throw an exception. */
-  if (r_array == NULL) {
-    Py_XDECREF(r_array);
-    return NULL;
+  /* If that didn't work, or the resulting array does not have the correct
+   * number of dimensions or type, then abort. */
+  if (r_array == NULL || PyArray_NDIM(r_array) != 1 ||
+                           PyArray_TYPE(r_array) != PyArray_DOUBLE) {
+    PyErr_SetString(PyExc_ValueError, 
+                    "r cannot be converted to a suitable array.");
+    return NULL; 
   }
 
   /* Read out dimensions and data pointers. */
@@ -85,16 +85,16 @@ static PyObject *circleangleloop_wrapper(PyObject *self, PyObject *args, PyObjec
 
   /* Create answer numpy array, let Python allocate memory.
      Do not allocate memory manually and then use PyArray_FromDimsAndData! */
-  PyArrayObject *answer = (PyArrayObject *)PyArray_FromDims(1, &n, NPY_DOUBLE);
+  PyArrayObject *answer_array = (PyArrayObject*)PyArray_FromDims(1, &n, NPY_DOUBLE);
 
   // Evaluate the model
-  circleangleloop(r_data, p, z, n, (double *)answer->data);
+  circleangleloop(r_data, p, z, n, (double*)PyArray_DATA(answer_array));
 
   /* Clean up. */
   Py_DECREF(r_array);
 
   // Return.
-  return PyArray_Return(answer);
+  return PyArray_Return(answer_array);
 }
 
 /* Wrapper function for circleanglesorted. */
