@@ -193,8 +193,6 @@ f = 2.0 * quadraticlimbdarkening(r, u1, u2) / n;
 #r = numpy.linspace(0.0, 1.0, n);
 #f = 2.0 * quadraticlimbdarkening(r, u1, u2) * numpy.append(numpy.append([0.5], numpy.repeat(1.0, n-2)), [0.5]) / (n-1);
 
-# Out of transit flux if there were no spots.
-ootflux0 = numpy.pi * (1.0-u1/3.0-u2/6.0);
 # Calculate orbital elements.
 eta, xi = spotrod.elements(timebkjd-midtransit, period, semimajoraxis, k, h);
 planetx = impactparam*eta/semimajoraxis;
@@ -208,7 +206,7 @@ spoty = 0.21;
 spotradius = 0.105;
 spotcontrast = 0.58;
 
-fitlightcurve = spotrod.integratetransit(planetx, planety, z, rp, ootflux0, r, f, numpy.array([spotx]), numpy.array([spoty]), numpy.array([spotradius]), numpy.array([spotcontrast]), planetangle);
+fitlightcurve = spotrod.integratetransit(planetx, planety, z, rp, r, f, numpy.array([spotx]), numpy.array([spoty]), numpy.array([spotradius]), numpy.array([spotcontrast]), planetangle);
 
 pyplot.plot(phase, flux, "b.");
 pyplot.plot(phase, fitlightcurve, "k-");

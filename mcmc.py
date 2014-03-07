@@ -138,10 +138,6 @@ f = 2.0 * quadraticlimbdarkening(r, u1, u2) / n;
 #r = numpy.linspace(0.0, 1.0, n);
 #f = 2.0 * quadraticlimbdarkening(r, u1, u2) * numpy.append(numpy.append([0.5], numpy.repeat(1.0, n-2)), [0.5]) / (n-1);
 
-# Out of transit flux if there were no spots.
-ootflux0 = numpy.pi * (1.0-u1/3.0-u2/6.0);
-# For other limb darkening laws, it can be obtained by numerical integration:
-#ootflux0 = numpy.pi * numpy.sum(f*r);
 # Calculate orbital elements.
 eta, xi = spotrod.elements(timebkjd-midtransit, period, semimajoraxis, k, h);
 # Planet coordinates in sky plane, in Rstar units.
@@ -156,7 +152,7 @@ planetangle = numpy.array([spotrod.circleangle(r, rp, z[i]) for i in xrange(z.sh
 logp = lambda p: -0.5 * numpy.sum(numpy.log((1.0 - numpy.power(p[0::4], 2.0) - numpy.power(p[1::4], 2.0))));
 
 # Likelihood for spot parameters.
-logl = lambda p: numpy.sum(numpy.power(spotrod.integratetransit(planetx, planety, z, rp, ootflux0, r, f, p[0::4], p[1::4], p[2::4], p[3::4], planetangle) - flux, 2.0) * minusoneovertwofluxerrsquared);
+logl = lambda p: numpy.sum(numpy.power(spotrod.integratetransit(planetx, planety, z, rp, r, f, p[0::4], p[1::4], p[2::4], p[3::4], planetangle) - flux, 2.0) * minusoneovertwofluxerrsquared);
 
 # We have one spot, therefore phase space is 4D.
 ndim = 4;

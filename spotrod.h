@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 
-void integratetransit(int, int, int, double*, double*, double*, double, double, double*, double*, double*, double*, double*, double*, double*, double*);
+void integratetransit(int, int, int, double*, double*, double*, double, double*, double*, double*, double*, double*, double*, double*, double*);
 void elements(double*, double, double, double, double, int, double*, double*);
 void circleangle(double*, double, double, int, double*);
 void ellipseangle(double*, double, double, int, double*);

@@ -25,7 +25,7 @@ static char module_docstring[] =
 "  the spotrod lightcurve model.\n"
 "  Source is available at https://github.com/bencebeky/spotrod";
 static char integratetransit_docstring[] = 
-" answer = integratetransit(planetx, planety, z, p, ootflux0, r, f, spotx, spoty, spotradius, spotcontrast, planetangle)\n"
+" answer = integratetransit(planetx, planety, z, p, r, f, spotx, spoty, spotradius, spotcontrast, planetangle)\n"
 "\n"
 "  Calculate integrated flux of a star if it is transited by a planet\n"
 "  of radius p*R_star, at projected position (planetx, planety)\n"
@@ -48,7 +48,6 @@ static char integratetransit_docstring[] =
 "  planet[xy]    planetary center coordinates in stellar radii in sky-projected coordinate system [m]\n"
 "  z             planetary center distance from stellar disk center in stellar radii     (cached) [m]\n"
 "  p             planetary radius in stellar radii, scalar\n"
-"  ootflux0      ootflux if there was no spot (only used if k=0)                         (cached)\n"
 "  r             radii of integration annuli in stellar radii, non-decreasing            (cached) [n]\n"
 "  f             2.0 * limb darkening at r[i] * width of annulus i                       (cached) [n]\n"
 "  spotx, spoty  spot center coordinates in stellar radii in sky-projected coordinate system      [k]\n"
@@ -58,8 +57,7 @@ static char integratetransit_docstring[] =
 "\n"
 "  (cached) means the parameter is redundant, and could be calculated from other parameters,\n"
 "  but storing it and passing it to this routine speeds up iterative execution (fit or MCMC).\n"
-"  Note that we do not take limb darkening coefficients, all we need is ootflux0 and f.\n"
-"  In fact, ootflux0 is only used if k=0 (no spots).\n"
+"  Note that we do not take limb darkening coefficients, all we need is f.\n"
 "\n"
 "  Output parameters:\n"
 "\n"
@@ -164,13 +162,13 @@ PyMODINIT_FUNC initspotrod(void) {
 static PyObject *integratetransit_wrapper(PyObject *self, PyObject *args, PyObject *kwds) {
   /* Input arguments. */
   PyObject *planetx_obj, *planety_obj, *z_obj, *r_obj, *f_obj, *spotx_obj, *spoty_obj, *spotradius_obj, *spotcontrast_obj, *planetangle_obj;
-  double p, ootflux0;
+  double p;
 
   // Keywords.
-  static char *kwlist[] = {"planetx", "planety", "z", "p", "ootflux0", "r", "f", "spotx", "spoty", "spotradius", "spotcontrast", "planetangle", NULL};
+  static char *kwlist[] = {"planetx", "planety", "z", "p", "r", "f", "spotx", "spoty", "spotradius", "spotcontrast", "planetangle", NULL};
 
   /* Parse the input tuple */
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOOddOOOOOOO", kwlist, &planetx_obj, &planety_obj, &z_obj, &p, &ootflux0, &r_obj, &f_obj, &spotx_obj, &spoty_obj, &spotradius_obj, &spotcontrast_obj, &planetangle_obj)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOOdOOOOOOO", kwlist, &planetx_obj, &planety_obj, &z_obj, &p, &r_obj, &f_obj, &spotx_obj, &spoty_obj, &spotradius_obj, &spotcontrast_obj, &planetangle_obj)) {
     PyErr_SetString(PyExc_ValueError, "Error parsing arguments.");
     return NULL;
   }
@@ -235,7 +233,7 @@ static PyObject *integratetransit_wrapper(PyObject *self, PyObject *args, PyObje
   PyArrayObject *answer = (PyArrayObject *)PyArray_FromDims(1, &m, NPY_DOUBLE);
 
   // Calculate answer.
-  integratetransit(m, n, k, planetx, planety, z, p, ootflux0, r, f, spotx, spoty, spotradius, spotcontrast, planetangle, (double *)answer->data);
+  integratetransit(m, n, k, planetx, planety, z, p, r, f, spotx, spoty, spotradius, spotcontrast, planetangle, (double *)answer->data);
 
   /* Clean up. */
   Py_DECREF(planetx_array);

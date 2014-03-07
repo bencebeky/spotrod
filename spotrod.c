@@ -20,7 +20,7 @@ along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 #include <stdio.h>
 #include "spotrod.h"
 
-void integratetransit(int m, int n, int k, double *planetx, double *planety, double *z, double p, double ootflux0, double *r, double *f, double *spotx, double *spoty, double *spotradius, double *spotcontrast, double *planetangle, double *answer) {
+void integratetransit(int m, int n, int k, double *planetx, double *planety, double *z, double p, double *r, double *f, double *spotx, double *spoty, double *spotradius, double *spotcontrast, double *planetangle, double *answer) {
 /* Calculate integrated flux of a star if it is transited by a planet
   of radius p*R_star, at projected position (planetx, planety)
   in R_star units.
@@ -42,7 +42,6 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
   planet[xy]    planetary center coordinates in stellar radii in sky-projected coordinate system [m]
   z             planetary center distance from stellar disk center in stellar radii     (cached) [m]
   p             planetary radius in stellar radii, scalar
-  ootflux0      ootflux if there was no spot (only used if k=0)                         (cached)
   r             radii of integration annuli in stellar radii, non-decreasing            (cached) [n]
   f             2.0 * limb darkening at r[i] * width of annulus i                       (cached) [n]
   spotx, spoty  spot center coordinates in stellar radii in sky-projected coordinate system      [k]
@@ -52,15 +51,14 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
 
   (cached) means the parameter is redundant, and could be calculated from other parameters,
   but storing it and passing it to this routine speeds up iterative execution (fit or MCMC).
-  Note that we do not take limb darkening coefficients, all we need is ootflux0 and f.
-  In fact, ootflux0 is only used if k=0 (no spots).
+  Note that we do not take limb darkening coefficients, all we need is f.
 
   Output parameters:
 
   answer        model lightcurve, with oot=1.0                                                [m] */
   // Running indices for m, n, k, respectively.
   int M, N, K;
-  // Out of transit flux is ootflux0 if k==0, and we have to sweat to calculate it otherwise.
+  // Out of transit flux to normalize lightcurve with.
   double ootflux;
   // Temporary storage for trapeze area to save on multiplications.
   double trapeze;
@@ -77,6 +75,11 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
   than the tangent plane at spot center. An array of length k. */
   // If we have no spot:
   if (k == 0) {
+    // Evaluate the integral for ootflux using the trapezoid method.
+    ootflux = 0.0;
+    for (N=0; N<n; N++) {
+      ootflux += M_PI * *(r+N) * *(f+N);
+    }
     for (M=0; M<m; M++) {
       // Transit?
       if (*(z+M) < 1.0 + p) {
@@ -86,7 +89,7 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
           *answer += *(r+N) * (M_PI - *(planetangle + n*M + N)) * *(f+N);
         }
         // Normalize by trapezoid width and by ootflux.
-        *answer /= ootflux0;
+        *answer /= ootflux;
       } else {
         *answer = 1.0;
       }
