@@ -136,7 +136,7 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety, dou
         // Cycle through spots and add their contributions.
         for (K=0; K<k; K++) {
           // Calculate distance of spot center and planet center for this moment.
-          d = sqrt(pow(*(planetx+M) - *(spoty+K) * sqrt(1.0 - *(spotradius+K) * *(spotradius+K)), 2.0) + pow(*(planety+M) - *(spotx+K) * sqrt(1.0 - *(spotradius+K) * *(spotradius+K)), 2.0));
+          d = sqrt(pow(*(planetx+M) - *(spotx+K) * sqrt(1.0 - *(spotradius+K) * *(spotradius+K)), 2.0) + pow(*(planety+M) - *(spoty+K) * sqrt(1.0 - *(spotradius+K) * *(spotradius+K)), 2.0));
           // Calculate central angle between planet and spot.
           if ((*(spotcenterdistance+K) == 0) || (*(z+M) == 0)) {
             planetspotangle = 0.0;
