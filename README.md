@@ -42,8 +42,4 @@ To generate the module `spotrod.so`, run `make` without any arguments.
 
 ## Citation
 
-If you use `spotrod` in a publication, please cite my paper that is in preparation right now. Please check back here for the proper citation.
-
-## TODO
-
-Publish the paper.
+If you use `spotrod` in a publication, please consider citing [Béky, Kipping, and Holman, 2014, arXiv:1407.4465](http://adsabs.harvard.edu/abs/2014arXiv1407.4465B).
