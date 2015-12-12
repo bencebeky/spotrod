@@ -201,10 +201,10 @@ z = numpy.sqrt(numpy.power(planetx,2) + numpy.power(planety,2));
 # Calculate planetangle array.
 planetangle = numpy.array([spotrod.circleangle(r, rp, z[i]) for i in xrange(z.shape[0])]);
 
-spotx = 0.374;
-spoty = 0.21;
-spotradius = 0.105;
-spotcontrast = 0.58;
+spotx = 0.204;
+spoty = 0.376;
+spotradius = 0.096;
+spotcontrast = 0.524;
 
 fitlightcurve = spotrod.integratetransit(planetx, planety, z, rp, r, f, numpy.array([spotx]), numpy.array([spoty]), numpy.array([spotradius]), numpy.array([spotcontrast]), planetangle);
 

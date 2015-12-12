@@ -167,7 +167,7 @@ burnin = 500;
 
 # Initial spot parameters.
 # [spotx, spoty, spotradius, spotcontrast]
-spot = numpy.array([0.374, 0.21, 0.105, 0.58]);
+spot = numpy.array([0.204, 0.376, 0.096, 0.524]);
 # Create 3D matrix for initial state for each temperature and walker.
 p0 = numpy.repeat(spot[:,numpy.newaxis].T, ntemps*nwalkers, axis=0).reshape(ntemps, nwalkers, ndim);
 # Randomize the initial states in a small neighborhood.
