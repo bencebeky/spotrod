@@ -163,7 +163,7 @@ static PyObject *elements_wrapper(PyObject *, PyObject *, PyObject *);
 static PyObject *circleangle_wrapper(PyObject *, PyObject *, PyObject *);
 static PyObject *ellipseangle_wrapper(PyObject *, PyObject *, PyObject *);
 
-/* Module specification */
+/* Method specifications */
 static PyMethodDef module_methods[] = {
     {"integratetransit", (PyCFunction)integratetransit_wrapper,
      METH_VARARGS | METH_KEYWORDS, integratetransit_docstring},
@@ -175,12 +175,14 @@ static PyMethodDef module_methods[] = {
      METH_VARARGS | METH_KEYWORDS, ellipseangle_docstring},
     {NULL, NULL, 0, NULL}};
 
+/* Module specification */
+static struct PyModuleDef moduledef = {PyModuleDef_HEAD_INIT, "spotrod",
+                                       module_docstring, -1, module_methods};
+
 /* Initialize the module */
 PyMODINIT_FUNC initspotrod(void) {
-  PyObject *m = Py_InitModule3("spotrod", module_methods, module_docstring);
-  if (m == NULL) return;
-  /* Load numpy functionality. */
-  import_array();
+  Py_Initialize();
+  return PyModule_Create(&moduledef);
 }
 
 /* Wrapper function for integratetransit. */
