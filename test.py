@@ -204,15 +204,13 @@ spotx = 0.204
 spoty = 0.376
 spotradius = 0.096
 spotcontrast = 0.524
-#print('r',len(r))
-#print('z',len(z))
-#print('planetangle',numpy.shape(planetangle))
 fitlightcurve = spotrod.integratetransit(planetx, planety, z, rp, r, f, np.array([spotx]), np.array([spoty]), np.array([spotradius]), np.array([spotcontrast]), planetangle)
-#print('fitlightcurve',len(fitlightcurve))
+
+#Plot the results
 plt.figure(figsize=(11,7))
 plt.plot(phase, flux, "b.", label='Data')
 plt.plot(phase, fitlightcurve, "k-", label='Model')
 plt.legend()
-plt.savefig("TESTTTTTTT.png")
+plt.savefig("test.png")
 plt.show()
 print('Done')
