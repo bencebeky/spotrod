@@ -21,25 +21,25 @@
 
 # Generate a spotrod model.
 
-import numpy;
-import spotrod;
-from matplotlib import pyplot;
-pyplot.interactive(True);
+import numpy as np
+import spotrod
+import matplotlib.pyplot as plt
+#pyplot.interactive(True)
 
 # Set transit parameters.
-period = 4.8878026;
-periodhour = 24.0*period;
-midtransit = 726.01298;
-rp = 0.05866;
-semimajoraxis = 14.17;
-k = 0.216;
-h = 0.133;
-impactparam = 0.203;
-u1 = 0.652;
-u2 = 0.038;
+period = 4.8878026
+periodhour = 24.0*period
+midtransit = 726.01298
+rp = 0.05866
+semimajoraxis = 14.17
+k = 0.216
+h = 0.133
+impactparam = 0.203
+u1 = 0.652
+u2 = 0.038
 
 # Hardcoded Kepler data for comparison.
-timebkjd = numpy.array([
+timebkjd = np.array([
         862.77430177,  862.7749829 ,  862.77566412,  862.77634525,
         862.77702628,  862.7777074 ,  862.77838863,  862.77906975,
         862.77975088,  862.7804321 ,  862.78111323,  862.78179436,
@@ -108,9 +108,9 @@ timebkjd = numpy.array([
         862.95889222,  862.95957334,  862.96025457,  862.96093569,
         862.96161682,  862.96229805,  862.96297907,  862.9636602 ,
         862.96434142,  862.96502255,  862.96570367,  862.9663849 ,
-        862.96706603,  862.96774715,  862.96842828,  862.9691094 ]);
+        862.96706603,  862.96774715,  862.96842828,  862.9691094 ])
 
-flux = numpy.array([
+flux = np.array([
         1.00001502,  1.00011146,  0.9999088 ,  0.99986404,  1.00017059,
         1.00004733,  1.00000525,  1.00002182,  1.000018  ,  1.00011754,
         1.00024319,  1.00000477,  1.00002742,  1.00002098,  0.99994868,
@@ -166,48 +166,53 @@ flux = numpy.array([
         0.99995887,  0.99999738,  1.00002003,  1.0000453 ,  0.9998942 ,
         0.9998737 ,  0.99975103,  0.99999732,  0.99985856,  1.00001299,
         1.00004375,  0.99988288,  0.99976236,  0.99994105,  0.99994707,
-        1.00009358]);
+        1.00009358])
 
-phase = numpy.mod((timebkjd-midtransit)/period+0.5, 1.0)-0.5;
+phase = np.mod((timebkjd-midtransit)/period+0.5, 1.0)-0.5
 
 # Quadratic limb darkening function, Claret et al. 2000.
 # I(mu)/I(1) = 1 - a(1-mu) - b(1-mu)^2
 def quadraticlimbdarkening(r, u1, u2):
-  answer = numpy.zeros_like(r);
-  mask = (r<=1.0);
-  oneminusmu = 1.0 - numpy.sqrt(1.0 - numpy.power(r[mask],2));
-  answer[mask] = 1.0 - u1 * oneminusmu - u2 * numpy.power(oneminusmu,2);
-  return answer;
+  answer = np.zeros_like(r)
+  mask = (r<=1.0)
+  oneminusmu = 1.0 - np.sqrt(1.0 - np.power(r[mask],2))
+  answer[mask] = 1.0 - u1 * oneminusmu - u2 * np.power(oneminusmu,2)
+  return answer
 
 # Initialize spotrod.
 # Number of intergration rings.
-n = 1000;
+n = 1000
 
 # Midpoint rule for integration.
 # Integration annulii radii.
-r = numpy.linspace(1.0/(2*n), 1.0-1.0/(2*n), n);
+r = np.linspace(1.0/(2*n), 1.0-1.0/(2*n), n)
 # Weights: 2.0 times limb darkening times width of integration annulii.
-f = 2.0 * quadraticlimbdarkening(r, u1, u2) / n;
+f = 2.0 * quadraticlimbdarkening(r, u1, u2) / n
 
 # Alternative: trapeziod rule.
-#r = numpy.linspace(0.0, 1.0, n);
-#f = 2.0 * quadraticlimbdarkening(r, u1, u2) * numpy.append(numpy.append([0.5], numpy.repeat(1.0, n-2)), [0.5]) / (n-1);
+#r = numpy.linspace(0.0, 1.0, n)
+#f = 2.0 * quadraticlimbdarkening(r, u1, u2) * numpy.append(numpy.append([0.5], numpy.repeat(1.0, n-2)), [0.5]) / (n-1)
 
 # Calculate orbital elements.
-eta, xi = spotrod.elements(timebkjd-midtransit, period, semimajoraxis, k, h);
-planetx = impactparam*eta/semimajoraxis;
-planety = -xi;
-z = numpy.sqrt(numpy.power(planetx,2) + numpy.power(planety,2));
+eta, xi = spotrod.elements(timebkjd-midtransit, period, semimajoraxis, k, h)
+planetx = impactparam*eta/semimajoraxis
+planety = -xi
+z = np.sqrt(np.power(planetx,2) + np.power(planety,2))
 # Calculate planetangle array.
-planetangle = numpy.array([spotrod.circleangle(r, rp, z[i]) for i in xrange(z.shape[0])]);
-
-spotx = 0.204;
-spoty = 0.376;
-spotradius = 0.096;
-spotcontrast = 0.524;
-
-fitlightcurve = spotrod.integratetransit(planetx, planety, z, rp, r, f, numpy.array([spotx]), numpy.array([spoty]), numpy.array([spotradius]), numpy.array([spotcontrast]), planetangle);
-
-pyplot.plot(phase, flux, "b.");
-pyplot.plot(phase, fitlightcurve, "k-");
-pyplot.savefig("test.png");
+planetangle = np.array([spotrod.circleangle(r, rp, z[i]) for i in range(z.shape[0])])
+spotx = 0.204
+spoty = 0.376
+spotradius = 0.096
+spotcontrast = 0.524
+#print('r',len(r))
+#print('z',len(z))
+#print('planetangle',numpy.shape(planetangle))
+fitlightcurve = spotrod.integratetransit(planetx, planety, z, rp, r, f, np.array([spotx]), np.array([spoty]), np.array([spotradius]), np.array([spotcontrast]), planetangle)
+#print('fitlightcurve',len(fitlightcurve))
+plt.figure(figsize=(11,7))
+plt.plot(phase, flux, "b.", label='Data')
+plt.plot(phase, fitlightcurve, "k-", label='Model')
+plt.legend()
+plt.savefig("TESTTTTTTT.png")
+plt.show()
+print('Done')
