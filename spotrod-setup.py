@@ -19,18 +19,23 @@
 # along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-import distutils.core;
-import numpy.distutils.misc_util;
+from distutils.core import setup, Extension
+import numpy
 
-name = "spotrod";
-version = "1.0";
-description = "A semi-analytic model for transits of spotted stars";
-author = "Bence Béky";
+name = "spotrod"
+version = "1.0"
+description = "A semi-analytic model for transits of spotted stars"
+author = "Bence Béky"
 author_email = "zsebkecske@gmail.com"
-maintainer = author;
-maintainer_email = author_email;
-url = "https://github.com/bencebeky/spotrod";
-ext_modules = [distutils.core.Extension("spotrod", ["spotrod-python-wrapper.c", "spotrod.c"], extra_compile_args=['-Ofast'])];
-include_dirs = numpy.distutils.misc_util.get_numpy_include_dirs();
+maintainer = author
+maintainer_email = author_email
+url = "https://github.com/bencebeky/spotrod"
 
-distutils.core.setup(name = name, version = version, description = description, author = author, author_email = author_email, maintainer = maintainer, maintainer_email = maintainer_email, url = url, ext_modules = ext_modules, include_dirs = include_dirs);
+module = Extension(name, sources=['spotrod.c', 'spotrod-python-wrapper.c'],
+                   include_dirs= [numpy.get_include()],
+                   extra_compile_args=['-Ofast'])
+
+setup(name = name, version = version, description = description,
+       author = author, author_email = author_email,
+         maintainer = maintainer, maintainer_email = maintainer_email,
+           url = url, ext_modules = [module])

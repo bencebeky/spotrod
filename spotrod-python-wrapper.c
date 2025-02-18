@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Spotrod.  If not, see <http://www.gnu.org/licenses/>. */
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
@@ -180,9 +181,13 @@ static struct PyModuleDef moduledef = {PyModuleDef_HEAD_INIT, "spotrod",
                                        module_docstring, -1, module_methods};
 
 /* Initialize the module */
-PyMODINIT_FUNC initspotrod(void) {
-  Py_Initialize();
-  return PyModule_Create(&moduledef);
+PyMODINIT_FUNC PyInit_spotrod(void) {
+  PyObject *module = PyModule_Create(&moduledef);
+  import_array();
+  if (PyErr_Occurred()) {;
+      return NULL;
+  }
+  return module;
 }
 
 /* Wrapper function for integratetransit. */
@@ -209,59 +214,59 @@ static PyObject *integratetransit_wrapper(PyObject *self, PyObject *args,
   }
 
   /* Check argument dimensions and types. */
-  if (PyArray_NDIM(planetx_obj) != 1 || PyArray_NDIM(planety_obj) != 1 ||
-      PyArray_NDIM(z_obj) != 1 || PyArray_NDIM(r_obj) != 1 ||
-      PyArray_NDIM(f_obj) != 1 || PyArray_NDIM(spotx_obj) != 1 ||
-      PyArray_NDIM(spoty_obj) != 1 || PyArray_NDIM(spotradius_obj) != 1 ||
-      PyArray_NDIM(spotcontrast_obj) != 1 ||
-      PyArray_NDIM(planetangle_obj) != 2 ||
-      PyArray_TYPE(planetx_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(planety_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(z_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(r_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(f_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(spotx_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(spoty_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(spotradius_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(spotcontrast_obj) != PyArray_DOUBLE ||
-      PyArray_TYPE(planetangle_obj) != PyArray_DOUBLE) {
+  if (PyArray_NDIM((PyArrayObject*)planetx_obj) != 1 || PyArray_NDIM((PyArrayObject*)planety_obj) != 1 ||
+      PyArray_NDIM((PyArrayObject*)z_obj) != 1 || PyArray_NDIM((PyArrayObject*)r_obj) != 1 ||
+      PyArray_NDIM((PyArrayObject*)f_obj) != 1 || PyArray_NDIM((PyArrayObject*)spotx_obj) != 1 ||
+      PyArray_NDIM((PyArrayObject*)spoty_obj) != 1 || PyArray_NDIM((PyArrayObject*)spotradius_obj) != 1 ||
+      PyArray_NDIM((PyArrayObject*)spotcontrast_obj) != 1 ||
+      PyArray_NDIM((PyArrayObject*)planetangle_obj) != 2 ||
+      PyArray_TYPE((PyArrayObject*)planetx_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)planety_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)z_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)r_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)f_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)spotx_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)spoty_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)spotradius_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)spotcontrast_obj) != NPY_DOUBLE ||
+      PyArray_TYPE((PyArrayObject*)planetangle_obj) != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError,
                     "Argument dimensions or types not correct.");
     return NULL;
   }
 
   /* Get dimensions. */
-  int m = PyArray_DIM(planetx_obj, 0);
-  int n = PyArray_DIM(r_obj, 0);
-  int k = PyArray_DIM(spotx_obj, 0);
+  int m = PyArray_DIM((PyArrayObject*)planetx_obj, 0);
+  int n = PyArray_DIM((PyArrayObject*)r_obj, 0);
+  int k = PyArray_DIM((PyArrayObject*)spotx_obj, 0);
 
   /* Check argument shapes. */
-  if (PyArray_DIM(planety_obj, 0) != m || PyArray_DIM(z_obj, 0) != m ||
-      PyArray_DIM(f_obj, 0) != n || PyArray_DIM(spoty_obj, 0) != k ||
-      PyArray_DIM(spotradius_obj, 0) != k ||
-      PyArray_DIM(spotcontrast_obj, 0) != k ||
-      PyArray_DIM(planetangle_obj, 0) != m ||
-      PyArray_DIM(planetangle_obj, 1) != n) {
+  if (PyArray_DIM((PyArrayObject*)planety_obj, 0) != m || PyArray_DIM((PyArrayObject*)z_obj, 0) != m ||
+      PyArray_DIM((PyArrayObject*)f_obj, 0) != n || PyArray_DIM((PyArrayObject*)spoty_obj, 0) != k ||
+      PyArray_DIM((PyArrayObject*)spotradius_obj, 0) != k ||
+      PyArray_DIM((PyArrayObject*)spotcontrast_obj, 0) != k ||
+      PyArray_DIM((PyArrayObject*)planetangle_obj, 0) != m ||
+      PyArray_DIM((PyArrayObject*)planetangle_obj, 1) != n) {
     PyErr_SetString(PyExc_ValueError, "Argument shapes not correct.");
     return NULL;
   }
 
   /* Interpret the input objects as numpy arrays. */
   PyObject *planetx_array =
-      PyArray_FROM_OTF(planetx_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+      PyArray_FROM_OTF(planetx_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   PyObject *planety_array =
-      PyArray_FROM_OTF(planety_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-  PyObject *z_array = PyArray_FROM_OTF(z_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-  PyObject *r_array = PyArray_FROM_OTF(r_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-  PyObject *f_array = PyArray_FROM_OTF(f_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-  PyObject *spotx_array = PyArray_FROM_OTF(spotx_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-  PyObject *spoty_array = PyArray_FROM_OTF(spoty_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+      PyArray_FROM_OTF(planety_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  PyObject *z_array = PyArray_FROM_OTF(z_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  PyObject *r_array = PyArray_FROM_OTF(r_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  PyObject *f_array = PyArray_FROM_OTF(f_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  PyObject *spotx_array = PyArray_FROM_OTF(spotx_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  PyObject *spoty_array = PyArray_FROM_OTF(spoty_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   PyObject *spotradius_array =
-      PyArray_FROM_OTF(spotradius_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+      PyArray_FROM_OTF(spotradius_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   PyObject *spotcontrast_array =
-      PyArray_FROM_OTF(spotcontrast_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+      PyArray_FROM_OTF(spotcontrast_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   PyObject *planetangle_array =
-      PyArray_FROM_OTF(planetangle_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+      PyArray_FROM_OTF(planetangle_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
   /* If that didn't work, throw an exception. */
   if (planetx_array == NULL || planety_array == NULL || z_array == NULL ||
@@ -282,24 +287,31 @@ static PyObject *integratetransit_wrapper(PyObject *self, PyObject *args,
   }
 
   /* Get data pointers. */
-  double *planetx = (double *)PyArray_DATA(planetx_array);
-  double *planety = (double *)PyArray_DATA(planety_array);
-  double *z = (double *)PyArray_DATA(z_array);
-  double *r = (double *)PyArray_DATA(r_array);
-  double *f = (double *)PyArray_DATA(f_array);
-  double *spotx = (double *)PyArray_DATA(spotx_array);
-  double *spoty = (double *)PyArray_DATA(spoty_array);
-  double *spotradius = (double *)PyArray_DATA(spotradius_array);
-  double *spotcontrast = (double *)PyArray_DATA(spotcontrast_array);
-  double *planetangle = (double *)PyArray_DATA(planetangle_array);
+  double *planetx = (double *)PyArray_DATA((PyArrayObject*)planetx_array);
+  double *planety = (double *)PyArray_DATA((PyArrayObject*)planety_array);
+  double *z = (double *)PyArray_DATA((PyArrayObject*)z_array);
+  double *r = (double *)PyArray_DATA((PyArrayObject*)r_array);
+  double *f = (double *)PyArray_DATA((PyArrayObject*)f_array);
+  double *spotx = (double *)PyArray_DATA((PyArrayObject*)spotx_array);
+  double *spoty = (double *)PyArray_DATA((PyArrayObject*)spoty_array);
+  double *spotradius = (double *)PyArray_DATA((PyArrayObject*)spotradius_array);
+  double *spotcontrast = (double *)PyArray_DATA((PyArrayObject*)spotcontrast_array);
+  double *planetangle = (double *)PyArray_DATA((PyArrayObject*)planetangle_array);
 
   // Create answer numpy array, let Python allocate memory.
-  PyArrayObject *answer = (PyArrayObject *)PyArray_FromDims(1, &m, NPY_DOUBLE);
+  npy_intp dims[1] = {m};
+  PyArrayObject *answer = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+
+  // Check if memory allocation was successful
+  if (answer == NULL) {
+    PyErr_SetString(PyExc_MemoryError, "Failed to allocate memory for 'answer'.");
+    return NULL;
+  }
 
   // Calculate answer.
   integratetransit(m, n, k, planetx, planety, z, p, r, f, spotx, spoty,
                    spotradius, spotcontrast, planetangle,
-                   (double *)answer->data);
+                   (double *)PyArray_DATA(answer));
 
   /* Clean up. */
   Py_DECREF(planetx_array);
@@ -326,7 +338,6 @@ static PyObject *elements_wrapper(PyObject *self, PyObject *args,
 
   // Keywords.
   static char *kwlist[] = {"deltaT", "period", "a", "k", "h", NULL};
-
   /* Parse the input tuple */
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "Odddd", kwlist, &deltaT_obj,
                                    &period, &a, &k, &h)) {
@@ -335,35 +346,43 @@ static PyObject *elements_wrapper(PyObject *self, PyObject *args,
   }
 
   /* Check argument dimensions and types. */
-  if (PyArray_NDIM(deltaT_obj) != 1 ||
-      PyArray_TYPE(deltaT_obj) != PyArray_DOUBLE) {
+  if (PyArray_NDIM((PyArrayObject*)deltaT_obj) != 1 ||
+      PyArray_TYPE((PyArrayObject*)deltaT_obj) != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError,
                     "Argument dimensions or types not correct.");
     return NULL;
   }
 
   /* Get dimensions. */
-  int n = PyArray_DIM(deltaT_obj, 0);
+  int n = PyArray_DIM((PyArrayObject*)deltaT_obj, 0);
 
   /* Interpret the input objects as numpy arrays. */
   PyObject *deltaT_array =
-      PyArray_FROM_OTF(deltaT_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+      PyArray_FROM_OTF(deltaT_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
   /* If that didn't work, throw an exception. */
   if (deltaT_array == NULL) {
     Py_XDECREF(deltaT_array);
     return NULL;
   }
-
   /* Get data pointers. */
-  double *deltaT = (double *)PyArray_DATA(deltaT_array);
+  double *deltaT = (double *)PyArray_DATA((PyArrayObject*)deltaT_array);
 
   // Create answer numpy arrays, let Python allocate memory.
-  PyArrayObject *eta = (PyArrayObject *)PyArray_FromDims(1, &n, NPY_DOUBLE);
-  PyArrayObject *xi = (PyArrayObject *)PyArray_FromDims(1, &n, NPY_DOUBLE);
+  npy_intp dims[1] = {n};
+  PyArrayObject *eta = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+  PyArrayObject *xi = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+
+if (eta == NULL || xi == NULL){
+  Py_XDECREF(eta);
+  Py_XDECREF(xi);
+  Py_DECREF(deltaT_array);
+  PyErr_SetString(PyExc_MemoryError, "Unable to allocate memory for ouput arrays.");
+  return NULL;
+}
 
   // Calculate answer.
-  elements(deltaT, period, a, k, h, n, (double *)eta->data, (double *)xi->data);
+  elements(deltaT, period, a, k, h, n, (double *)PyArray_DATA(eta), (double *)PyArray_DATA(xi));
 
   /* Clean up. */
   Py_DECREF(deltaT_array);
@@ -398,17 +417,17 @@ static PyObject *circleangle_wrapper(PyObject *self, PyObject *args,
   }
 
   /* Check argument dimensions and types. */
-  if (PyArray_NDIM(r_obj) != 1 || PyArray_TYPE(r_obj) != PyArray_DOUBLE) {
+  if (PyArray_NDIM((PyArrayObject*)r_obj) != 1 || PyArray_TYPE((PyArrayObject*)r_obj) != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError,
                     "Argument dimensions or types not correct.");
     return NULL;
   }
 
   /* Get dimensions. */
-  int n = PyArray_DIM(r_obj, 0);
+  int n = PyArray_DIM((PyArrayObject*)r_obj, 0);
 
   /* Interpret the input objects as numpy arrays. */
-  PyObject *r_array = PyArray_FROM_OTF(r_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+  PyObject *r_array = PyArray_FROM_OTF(r_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
   /* If that didn't work, throw an exception. */
   if (r_array == NULL) {
@@ -417,14 +436,20 @@ static PyObject *circleangle_wrapper(PyObject *self, PyObject *args,
   }
 
   /* Get data pointers. */
-  double *r = (double *)PyArray_DATA(r_array);
+  double *r = (double *)PyArray_DATA((PyArrayObject*)r_array);
 
   // Create answer numpy arrays, let Python allocate memory.
-  PyArrayObject *answer = (PyArrayObject *)PyArray_FromDims(1, &n, NPY_DOUBLE);
+  npy_intp dims[1] = {n};
+  PyArrayObject *answer = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+
+  // Check if memory allocation was successful
+  if (answer == NULL) {
+    PyErr_SetString(PyExc_MemoryError, "Failed to allocate memory for 'answer'.");
+    return NULL;
+  }
 
   // Calculate answer.
-  circleangle(r, p, z, n, (double *)answer->data);
-
+  circleangle(r, p, z, n, (double *)PyArray_DATA(answer));
   /* Clean up. */
   Py_DECREF(r_array);
 
@@ -449,17 +474,17 @@ static PyObject *ellipseangle_wrapper(PyObject *self, PyObject *args,
   }
 
   /* Check argument dimensions and types. */
-  if (PyArray_NDIM(r_obj) != 1 || PyArray_TYPE(r_obj) != PyArray_DOUBLE) {
+  if (PyArray_NDIM((PyArrayObject*)r_obj) != 1 || PyArray_TYPE((PyArrayObject*)r_obj) != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError,
                     "Argument dimensions or types not correct.");
     return NULL;
   }
 
   /* Get dimensions. */
-  int n = PyArray_DIM(r_obj, 0);
+  int n = PyArray_DIM((PyArrayObject*)r_obj, 0);
 
   /* Interpret the input objects as numpy arrays. */
-  PyObject *r_array = PyArray_FROM_OTF(r_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+  PyObject *r_array = PyArray_FROM_OTF(r_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
   /* If that didn't work, throw an exception. */
   if (r_array == NULL) {
@@ -468,13 +493,20 @@ static PyObject *ellipseangle_wrapper(PyObject *self, PyObject *args,
   }
 
   /* Get data pointers. */
-  double *r = (double *)PyArray_DATA(r_array);
+  double *r = (double *)PyArray_DATA((PyArrayObject*)r_array);
 
   // Create answer numpy arrays, let Python allocate memory.
-  PyArrayObject *answer = (PyArrayObject *)PyArray_FromDims(1, &n, NPY_DOUBLE);
+  npy_intp dims[1] = {n};
+  PyArrayObject *answer = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+
+  // Check if memory allocation was successful
+  if (answer == NULL) {
+    PyErr_SetString(PyExc_MemoryError, "Failed to allocate memory for 'answer'.");
+    return NULL;
+  }
 
   // Calculate answer.
-  ellipseangle(r, a, z, n, (double *)answer->data);
+  ellipseangle(r, a, z, n, (double *)PyArray_DATA(answer));
 
   /* Clean up. */
   Py_DECREF(r_array);
