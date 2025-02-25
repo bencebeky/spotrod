@@ -14,7 +14,8 @@ module = Extension(
 	name,
 	sources=['spotrod.c', 'spotrod-python-wrapper.c'],
 	include_dirs=[np.get_include()],
-	extra_compile_args=['-Ofast']
+	extra_compile_args=['-Ofast'],
+	extra_link_args=['-lm'] # Explicit linking to the math library as fallback
 )
 
 setup(
