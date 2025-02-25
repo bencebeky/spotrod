@@ -36,9 +36,31 @@ This repository contains `spotrod`, a semi-analytic model for transits of spotte
 - [test.png](test.png) output of minimal script;
 - [mcmc.py](mcmc.py) an MCMC simulation using the [emcee](http://dan.iel.fm/emcee/) package, creating an animation.
 
-## Compilation
+## Installation / Compilation
+To install this package, first ensure you have Python and the necessary build tools installed. Clone the repository to your local machine and navigate to the repository directory. Then, 
+run the following command to build and install the package into your current Python environment:  
 
-To generate the module `spotrod.so`, run `make` without any arguments.
+```
+$ pip install .
+```
+
+This command will automatically handle dependencies and compile any C extensions. If you prefer an editable install for development, use: 
+  
+```
+$ pip install -e .
+```
+
+This setup allows you to make changes to the codebase and see the effects without reinstalling.
+
+To compile the package without installing it into the currently activated Python environment run:
+```
+$ python setup.py build
+```
+
+To clean up (some of) the build process products run:
+```
+$ python setup.py clean --all
+```
 
 ## Citation
 
