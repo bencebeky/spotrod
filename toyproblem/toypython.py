@@ -48,7 +48,7 @@ def circleangleloop(r, p, z):
   pplusz = p+z;
   zsquared = z*z;
   psquared = p*p;
-  for i in xrange(r.shape[0]):
+  for i in range(r.shape[0]):
     ri = r[i];
     # If the planet entirely covers the circle, the half central angle is pi.
     if (ri <= pminusz):

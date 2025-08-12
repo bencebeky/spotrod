@@ -53,7 +53,7 @@ def circleangleloop(numpy.ndarray[FLOAT_t, ndim=1] r, double p, double z):
   cdef double zsquared = z*z
   cdef double psquared = p*p
   cdef double ri
-  for i in xrange(r.shape[0]):
+  for i in range(r.shape[0]):
     ri = r[i];
     # If the planet entirely covers the circle, the half central angle is pi.
     if (ri <= pminusz):

@@ -52,7 +52,7 @@ void integratetransit(int m, int n, int k, double *planetx, double *planety,
     [n] spotx, spoty  spot center coordinates in stellar radii in sky-projected
     coordinate system      [k] spotradius    spot radius in stellar radii [k]
     spotcontrast  spot contrast [k] planetangle   value of [circleangle(r, p,
-    z[i]) for i in xrange(m)]                 (cached) [m,n]
+    z[i]) for i in range(m)]                 (cached) [m,n]
 
     (cached) means the parameter is redundant, and could be calculated from
     other parameters, but storing it and passing it to this routine speeds up
