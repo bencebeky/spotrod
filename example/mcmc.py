@@ -22,14 +22,12 @@
 # Perform parallel tempered mcmc on a single transit of HAT-P-11.
 # This might take a dozen minutes or so.
 
-import os;
-import pyfits;
-import numpy;
-import spotrod;
-import pickle;
-from emcee import PTSampler;
-from matplotlib import pyplot;
-from matplotlib import animation;
+from emcee import PTSampler
+from matplotlib import animation
+from matplotlib import pyplot
+import kepler_data
+import numpy as np
+import spotrod
 
 # Set transit parameters.
 # Fit values based on Kepler data.
