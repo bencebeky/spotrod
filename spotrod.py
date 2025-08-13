@@ -23,13 +23,10 @@ from typing import Tuple
 
 
 def integratetransit(
-    m: int,
-    n: int,
-    k: int,
     planetx: NDArray[np.float64],
     planety: NDArray[np.float64],
     z: NDArray[np.float64],
-    p: float,
+    p: np.float64,
     r: NDArray[np.float64],
     f: NDArray[np.float64],
     spotx: NDArray[np.float64],
@@ -77,25 +74,20 @@ def integratetransit(
     answer        model lightcurve, with oot=1.0 [m]
     """
 
-    """
-  // Running indices for m, n, k, respectively.
-  int M, N, K;
-  // Out of transit flux to normalize lightcurve with.
-  double ootflux;
-  // Temporary storage for trapeze area to save on multiplications.
-  double trapeze;
-  // Temporary storage for what it is called.
-  double spotcenterdistancesquared;
-  // Cache for spot properties.
-  double *spotcenterdistance, *spotangle;
-  // Cache for trapezoid integration.
-  double *values;
-  // Cache for planet-spot center distance and central angle.
-  double d, planetspotangle;
-  /* Projected distance of center of star and center of spot, in stellar radius,
-  accounting for the spot boundary plane being closer to the sphere radius
-  than the tangent plane at spot center. An array of length k. */
-  """
+    # Number of instances
+    m = planetx.size
+    # Number of integration annulii
+    n = r.size
+    # Number of spots
+    k = spotx.size
+
+    assert planetx.shape == (m,)
+    assert planety.shape == (m,)
+    assert r.shape == (n,)
+    assert f.shape == (n,)
+    assert spotx.shape == (k,)
+    assert spoty.shape == (k,)
+    assert planetangle.shape == (m, n)
 
     if k == 0:
         ootflux = np.pi * np.sum(r * f)
@@ -224,6 +216,8 @@ def elements(
     """
 
     n = deltaT.size
+    assert deltaT.shape == (n,)
+
     # Eccentricity and oblateness.
     e = np.sqrt(k * k + h * h)
     l = 1 - np.sqrt(1 - k * k - h * h)
@@ -271,7 +265,9 @@ def elements(
     return eta, xi
 
 
-def circleangle(r, p, z):
+def circleangle(
+    r: NDArray[np.float64], p: np.float64, z: np.float64
+) -> NDArray[np.float64]:
     """circleangle(r, p, z)
 
     Calculate half central angle of the arc of circle of radius r
@@ -292,9 +288,13 @@ def circleangle(r, p, z):
     Output:
       circleangle  one dimensional numpy array, same size as r
     """
+
+    n = r.size
+    assert r.shape == (n,)
+
     # If the circle arc of radius r is disjoint from the circular disk
     # of radius p, then the angle is zero.
-    answer = np.empty_like(r)
+    answer = np.empty(n)
     if p > z:
         # Planet covers center of star.
         a, b = np.searchsorted(r, [p - z, p + z], side="right")
@@ -341,6 +341,7 @@ def ellipseangle(
     """
 
     n = r.size
+    assert r.shape == (n,)
 
     # Concentric case
     if z <= 0.0:

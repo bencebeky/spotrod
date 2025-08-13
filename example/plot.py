@@ -77,9 +77,6 @@ spoty = 0.376
 spotradius = 0.096
 spotcontrast = 0.524
 prediction = spotrod.integratetransit(
-    planetx.size,
-    n,
-    1,
     planetx,
     planety,
     z,
