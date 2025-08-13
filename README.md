@@ -35,7 +35,9 @@ $ python setup.py clean --all
 
 ## Citation
 
-If you use `spotrod` in a publication, please consider citing [Béky, Kipping, and Holman, 2014, arXiv:1407.4465](http://adsabs.harvard.edu/abs/2014arXiv1407.4465B).
+If you use `spotrod` in a publication, please cite the publication [Béky,
+Kipping, and Holman, 2014, MNRAS, 442,
+3686](https://ui.adsabs.harvard.edu/abs/2014MNRAS.442.3686B/abstract).
 
 ## License
 
