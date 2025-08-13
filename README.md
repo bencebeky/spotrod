@@ -1,6 +1,4 @@
-# spotrod: A semi-analytic model for transits of spotted stars
-
-## Contents
+# spotrod: transit lightcurves of spotted stars
 
 This repository contains `spotrod`, a semi-analytic model to calculate
 lightcurves of planetary transits of spotted stars. The model is implemented in
