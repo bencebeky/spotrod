@@ -41,7 +41,7 @@ mu1 = 0.652
 mu2 = 0.038
 
 timebkjd = kepler_data.timebkjd
-measurement = kepler_data.data
+measurement = kepler_data.flux
 
 phase = np.mod((timebkjd - midtransit) / period + 0.5, 1.0) - 0.5
 

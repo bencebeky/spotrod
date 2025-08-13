@@ -305,7 +305,7 @@ timebkjd = np.array(
     ]
 )
 
-data = np.array(
+flux = np.array(
     [
         1.00001502,
         1.00011146,
