@@ -31,17 +31,17 @@ import spotrod
 
 # Set transit parameters.
 # Fit values based on Kepler data.
-period = 4.8878026;
-periodhour = 24.0*period;
-midtransit = 726.01298;
-rp = 0.05866;
-semimajoraxis = 14.17;
-impactparam = 0.203;
-u1 = 0.652;
-u2 = 0.038;
+period = 4.8878026
+periodhour = 24.0*period
+midtransit = 726.01298
+rp = 0.05866
+semimajoraxis = 14.17
+impactparam = 0.203
+u1 = 0.652
+u2 = 0.038
 # Values from Bakos et al. 2010, based on RV fit.
-k = 0.216;
-h = 0.133;
+k = 0.216
+h = 0.133
 
 timebkjd = kepler_data.timebkjd
 flux = kepler_data.flux
@@ -49,102 +49,102 @@ flux = kepler_data.flux
 # Quadratic limb darkening function, Claret et al. 2000.
 # I(mu)/I(1) = 1 - a(1-mu) - b(1-mu)^2
 def quadraticlimbdarkening(r, u1, u2):
-  answer = numpy.zeros_like(r);
-  mask = (r<=1.0);
-  oneminusmu = 1.0 - numpy.sqrt(1.0 - numpy.power(r[mask],2));
-  answer[mask] = 1.0 - u1 * oneminusmu - u2 * numpy.power(oneminusmu,2);
-  return answer;
+  answer = numpy.zeros_like(r)
+  mask = (r<=1.0)
+  oneminusmu = 1.0 - numpy.sqrt(1.0 - numpy.power(r[mask],2))
+  answer[mask] = 1.0 - u1 * oneminusmu - u2 * numpy.power(oneminusmu,2)
+  return answer
 
 # Initialize spotrod.
 # Number of intergration rings.
-n = 1000;
+n = 1000
 
 # Midpoint rule for integration.
 # Integration annulii radii.
-r = numpy.linspace(1.0/(2*n), 1.0-1.0/(2*n), n);
+r = numpy.linspace(1.0/(2*n), 1.0-1.0/(2*n), n)
 # Weights: 2.0 times limb darkening times width of integration annulii.
-f = 2.0 * quadraticlimbdarkening(r, u1, u2) / n;
+f = 2.0 * quadraticlimbdarkening(r, u1, u2) / n
 
 # Alternative: trapeziod rule.
-#r = numpy.linspace(0.0, 1.0, n);
-#f = 2.0 * quadraticlimbdarkening(r, u1, u2) * numpy.append(numpy.append([0.5], numpy.repeat(1.0, n-2)), [0.5]) / (n-1);
+#r = numpy.linspace(0.0, 1.0, n)
+#f = 2.0 * quadraticlimbdarkening(r, u1, u2) * numpy.append(numpy.append([0.5], numpy.repeat(1.0, n-2)), [0.5]) / (n-1)
 
 # Calculate orbital elements.
-eta, xi = spotrod.elements(timebkjd-midtransit, period, semimajoraxis, k, h);
+eta, xi = spotrod.elements(timebkjd-midtransit, period, semimajoraxis, k, h)
 # Planet coordinates in sky plane, in Rstar units.
-planetx = impactparam*eta/semimajoraxis;
-planety = -xi;
+planetx = impactparam*eta/semimajoraxis
+planety = -xi
 # Distance from center, same as $z$ in Mandel, Agol 2002.
-z = numpy.sqrt(numpy.power(planetx,2) + numpy.power(planety,2));
+z = numpy.sqrt(numpy.power(planetx,2) + numpy.power(planety,2))
 # Calculate planetangle array.
-planetangle = numpy.array([spotrod.circleangle(r, rp, z[i]) for i in range(z.shape[0])]);
+planetangle = numpy.array([spotrod.circleangle(r, rp, z[i]) for i in range(z.shape[0])])
 
 # Prior for spot parameters: isotropic on the surface of the sphere.
-logp = lambda p: -0.5 * numpy.sum(numpy.log((1.0 - numpy.power(p[0::4], 2.0) - numpy.power(p[1::4], 2.0))));
+logp = lambda p: -0.5 * numpy.sum(numpy.log((1.0 - numpy.power(p[0::4], 2.0) - numpy.power(p[1::4], 2.0))))
 
 # Likelihood for spot parameters.
-logl = lambda p: numpy.sum(numpy.power(spotrod.integratetransit(planetx, planety, z, rp, r, f, p[0::4], p[1::4], p[2::4], p[3::4], planetangle) - flux, 2.0));
+logl = lambda p: numpy.sum(numpy.power(spotrod.integratetransit(planetx, planety, z, rp, r, f, p[0::4], p[1::4], p[2::4], p[3::4], planetangle) - flux, 2.0))
 
 # We have one spot, therefore phase space is 4D.
-ndim = 4;
+ndim = 4
 # Number of temperatures.
-ntemps = 10;
+ntemps = 10
 # Number of parallel walkers at each temperature.
-nwalkers = 100;
+nwalkers = 100
 # Number of iterations.
-niter = 1000;
+niter = 1000
 # Of which burn-in is the first
-burnin = 500;
+burnin = 500
 
 # Initial spot parameters.
 # [spotx, spoty, spotradius, spotcontrast]
-spot = numpy.array([0.204, 0.376, 0.096, 0.524]);
+spot = numpy.array([0.204, 0.376, 0.096, 0.524])
 # Create 3D matrix for initial state for each temperature and walker.
-p0 = numpy.repeat(spot[:,numpy.newaxis].T, ntemps*nwalkers, axis=0).reshape(ntemps, nwalkers, ndim);
+p0 = numpy.repeat(spot[:,numpy.newaxis].T, ntemps*nwalkers, axis=0).reshape(ntemps, nwalkers, ndim)
 # Randomize the initial states in a small neighborhood.
-p0 += numpy.random.normal(scale=1e-3, size=p0.shape);
+p0 += numpy.random.normal(scale=1e-3, size=p0.shape)
 
 # Initialize sampler.
-sampler = PTSampler(ntemps, nwalkers, ndim, logl, logp);
+sampler = PTSampler(ntemps, nwalkers, ndim, logl, logp)
 
 # Run sampler.
-pos, prob, state = sampler.run_mcmc(p0, niter);
+pos, prob, state = sampler.run_mcmc(p0, niter)
 
 # Take a view of the T=0 chain.
-zerotemp = sampler.chain[0];
+zerotemp = sampler.chain[0]
 
 # We take iterations at T=0 after burn-in as equilibrium
 # distribution. With a 100 walkers, this is 1e4 points.
-eq = zerotemp[:,burnin:,:].reshape([nwalkers*(niter-burnin), ndim]);
+eq = zerotemp[:,burnin:,:].reshape([nwalkers*(niter-burnin), ndim])
 
 # Plot distribution of every possible pairs.
-labels = ["spotx", "spoty", "spotradius", "spotcontrast"];
+labels = ["spotx", "spoty", "spotradius", "spotcontrast"]
 for ploti in range(ndim-1):
   for plotj in range(ploti+1,ndim):
     pyplot.figure()
-    pyplot.plot(eq[:,ploti],eq[:,plotj],"b.");
-    pyplot.xlabel(labels[ploti]);
-    pyplot.ylabel(labels[plotj]);
-    pyplot.savefig("equilibrium-{0:d}-{1:d}.png".format(ploti,plotj));
+    pyplot.plot(eq[:,ploti],eq[:,plotj],"b.")
+    pyplot.xlabel(labels[ploti])
+    pyplot.ylabel(labels[plotj])
+    pyplot.savefig("equilibrium-{0:d}-{1:d}.png".format(ploti,plotj))
 
 # Create an animation in anix and aniy indices.
-anix = 0;
-aniy = 1;
-fig = pyplot.figure();
-ax = pyplot.gca();
-chainplot, = pyplot.plot(zerotemp[0,0,anix], zerotemp[0,0,aniy], "b.");
-ax.set_xlim(numpy.min(zerotemp[:,:,anix]), numpy.max(zerotemp[:,:,anix]));
-ax.set_ylim(numpy.min(zerotemp[:,:,aniy]), numpy.max(zerotemp[:,:,aniy]));
-ax.set_xlabel(labels[anix]);
-ax.set_ylabel(labels[aniy]);
+anix = 0
+aniy = 1
+fig = pyplot.figure()
+ax = pyplot.gca()
+chainplot, = pyplot.plot(zerotemp[0,0,anix], zerotemp[0,0,aniy], "b.")
+ax.set_xlim(numpy.min(zerotemp[:,:,anix]), numpy.max(zerotemp[:,:,anix]))
+ax.set_ylim(numpy.min(zerotemp[:,:,aniy]), numpy.max(zerotemp[:,:,aniy]))
+ax.set_xlabel(labels[anix])
+ax.set_ylabel(labels[aniy])
 
 def animate(i):
-  min = numpy.max([0, i-50]);
-  max = i;
-  chainplot.set_data(zerotemp[:,min:max,anix], zerotemp[:,min:max,aniy]);
+  min = numpy.max([0, i-50])
+  max = i
+  chainplot.set_data(zerotemp[:,min:max,anix], zerotemp[:,min:max,aniy])
   # Align title to left, otherwise it would jitter
   # due to changing width of rendered digits.
-  ax.set_title("Iterations {0:d}:{1:d}".format(min, max), horizontalalignment = "left");
+  ax.set_title("Iterations {0:d}:{1:d}".format(min, max), horizontalalignment = "left")
 
-ani = animation.FuncAnimation(fig, animate, frames=niter);
-ani.save("mcmc.mp4", fps=30);
+ani = animation.FuncAnimation(fig, animate, frames=niter)
+ani.save("mcmc.mp4", fps=30)
