@@ -32,9 +32,11 @@ periodhour = 24.0 * period
 midtransit = 726.01298
 rp = 0.05866
 semimajoraxis = 14.17
+impactparam = 0.203
+
+# Values from Bakos et al. 2010, based on RV fit.
 k = 0.216
 h = 0.133
-impactparam = 0.203
 
 # Limb darkening parameters
 mu1 = 0.652
@@ -65,6 +67,7 @@ f = quadraticlimbdarkening(r, mu1, mu2)
 eta, xi = spotrod.elements(timebkjd - midtransit, period, semimajoraxis, k, h)
 planetx = impactparam * eta / semimajoraxis
 planety = -xi
+# Distance from center, same as `z` in Mandel, Agol 2002.
 z = np.sqrt(np.power(planetx, 2) + np.power(planety, 2))
 
 planetangle = np.array([spotrod.circleangle(r, rp, z[i]) for i in range(z.size)])

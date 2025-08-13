@@ -19,8 +19,8 @@
 # along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-# Perform parallel tempered mcmc on a single transit of HAT-P-11.
-# This might take a dozen minutes or so.
+"""Perform parallel tempered mcmc on a single transit of HAT-P-11.
+This might take a dozen minutes or so."""
 
 from emcee import PTSampler
 from matplotlib import animation
@@ -37,47 +37,40 @@ midtransit = 726.01298
 rp = 0.05866
 semimajoraxis = 14.17
 impactparam = 0.203
-u1 = 0.652
-u2 = 0.038
+
 # Values from Bakos et al. 2010, based on RV fit.
 k = 0.216
 h = 0.133
+
+# Limb darkening parameters
+mu1 = 0.652
+mu2 = 0.038
 
 timebkjd = kepler_data.timebkjd
 flux = kepler_data.flux
 
 # Quadratic limb darkening function, Claret et al. 2000.
 # I(mu)/I(1) = 1 - a(1-mu) - b(1-mu)^2
-def quadraticlimbdarkening(r, u1, u2):
-  answer = numpy.zeros_like(r)
-  mask = (r<=1.0)
-  oneminusmu = 1.0 - numpy.sqrt(1.0 - numpy.power(r[mask],2))
-  answer[mask] = 1.0 - u1 * oneminusmu - u2 * numpy.power(oneminusmu,2)
-  return answer
+def quadraticlimbdarkening(r, mu1, mu2):
+    answer = np.zeros_like(r)
+    mask = r <= 1.0
+    oneminusmu = 1.0 - np.sqrt(1.0 - np.power(r[mask], 2))
+    answer[mask] = 1.0 - mu1 * oneminusmu - mu2 * np.power(oneminusmu, 2)
+    return answer
 
-# Initialize spotrod.
-# Number of intergration rings.
+# Integration radii and weights (midpoint rule)
 n = 1000
+r = np.linspace(1.0 / (2 * n), 1.0 - 1.0 / (2 * n), n)
+f = quadraticlimbdarkening(r, mu1, mu2)
 
-# Midpoint rule for integration.
-# Integration annulii radii.
-r = numpy.linspace(1.0/(2*n), 1.0-1.0/(2*n), n)
-# Weights: 2.0 times limb darkening times width of integration annulii.
-f = 2.0 * quadraticlimbdarkening(r, u1, u2) / n
-
-# Alternative: trapeziod rule.
-#r = numpy.linspace(0.0, 1.0, n)
-#f = 2.0 * quadraticlimbdarkening(r, u1, u2) * numpy.append(numpy.append([0.5], numpy.repeat(1.0, n-2)), [0.5]) / (n-1)
-
-# Calculate orbital elements.
-eta, xi = spotrod.elements(timebkjd-midtransit, period, semimajoraxis, k, h)
-# Planet coordinates in sky plane, in Rstar units.
-planetx = impactparam*eta/semimajoraxis
+# Orbital elements
+eta, xi = spotrod.elements(timebkjd - midtransit, period, semimajoraxis, k, h)
+planetx = impactparam * eta / semimajoraxis
 planety = -xi
-# Distance from center, same as $z$ in Mandel, Agol 2002.
-z = numpy.sqrt(numpy.power(planetx,2) + numpy.power(planety,2))
-# Calculate planetangle array.
-planetangle = numpy.array([spotrod.circleangle(r, rp, z[i]) for i in range(z.shape[0])])
+# Distance from center, same as `z` in Mandel, Agol 2002.
+z = np.sqrt(np.power(planetx, 2) + np.power(planety, 2))
+
+planetangle = np.array([spotrod.circleangle(r, rp, z[i]) for i in range(z.size)])
 
 # Prior for spot parameters: isotropic on the surface of the sphere.
 logp = lambda p: -0.5 * numpy.sum(numpy.log((1.0 - numpy.power(p[0::4], 2.0) - numpy.power(p[1::4], 2.0))))
