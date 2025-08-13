@@ -25,7 +25,7 @@ eta, xi = spotrod.elements(time, period=5, a=14, k=0.0, h=0.0)
 planetx = np.zeros(time.size)
 planety = -xi
 
-r = np.linspace(0.01, 0.99, 1000)
+r = np.linspace(0.0005, 0.9995, 1000)
 p = 0.05
 z = np.sqrt(planetx * planetx + planety * planety)
 planetangle = np.array([spotrod.circleangle(r, p, z[i]) for i in range(z.size)])
