@@ -48,9 +48,6 @@ h = 0.133;
 timebkjd = kepler_data.timebkjd
 flux = kepler_data.flux
 
-# Calculate chi prefactor to be used with MCMC.
-minusoneovertwofluxerrsquared = - 0.5 * numpy.power(fluxerr, -2.0);
-
 # Quadratic limb darkening function, Claret et al. 2000.
 # I(mu)/I(1) = 1 - a(1-mu) - b(1-mu)^2
 def quadraticlimbdarkening(r, u1, u2):
@@ -88,7 +85,7 @@ planetangle = numpy.array([spotrod.circleangle(r, rp, z[i]) for i in range(z.sha
 logp = lambda p: -0.5 * numpy.sum(numpy.log((1.0 - numpy.power(p[0::4], 2.0) - numpy.power(p[1::4], 2.0))));
 
 # Likelihood for spot parameters.
-logl = lambda p: numpy.sum(numpy.power(spotrod.integratetransit(planetx, planety, z, rp, r, f, p[0::4], p[1::4], p[2::4], p[3::4], planetangle) - flux, 2.0) * minusoneovertwofluxerrsquared);
+logl = lambda p: numpy.sum(numpy.power(spotrod.integratetransit(planetx, planety, z, rp, r, f, p[0::4], p[1::4], p[2::4], p[3::4], planetangle) - flux, 2.0));
 
 # We have one spot, therefore phase space is 4D.
 ndim = 4;
