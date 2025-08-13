@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77.0.3", "setuptools_scm[toml]>=6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spotrod"
+description = "A semi-analytic model for transits of spotted stars"
+authors = [ { name = "Bence Béky", email = "zsebkecske@gmail.com" } ]
+
+dynamic = ["version"]
+classifiers = [
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Astronomy",
+        "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">=3.9"
+dependencies = [ "numpy >= 1.25.0" ]
+readme = "README.md"
+license = "GPL-3.0"
+license-files = ["LICENSE"]
+
+[project.urls]
+Source = "https://github.com/bencebeky/spotrod"
+Issues = "https://github.com/bencebeky/spotrod/issues"
+
+[tool.setuptools]
+packages = ["twine", "twine.commands"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "example.__version__"}
+
+[tool.setuptools_scm]
