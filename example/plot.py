@@ -28,7 +28,6 @@ import kepler_data
 
 # Transit parameters
 period = 4.8878026
-periodhour = 24.0 * period
 midtransit = 726.01298
 rp = 0.05866
 semimajoraxis = 14.17

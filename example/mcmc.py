@@ -32,7 +32,6 @@ import spotrod
 # Set transit parameters.
 # Fit values based on Kepler data.
 period = 4.8878026
-periodhour = 24.0 * period
 midtransit = 726.01298
 rp = 0.05866
 semimajoraxis = 14.17
