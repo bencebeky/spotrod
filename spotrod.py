@@ -171,7 +171,7 @@ def integratetransit(
                 elif planetangle[t, i] <= planetspotangle + spotangle[spot, i]:
                     # Case 3a: partial overlap on one side only.
                     if (
-                        2 * np.pi - planetspotangle
+                        2.0 * np.pi - planetspotangle
                         >= planetangle[t, i] + spotangle[spot, i]
                     ):
                         values[i] += (
@@ -220,7 +220,7 @@ def elements(
 
     # Eccentricity and oblateness.
     e = np.sqrt(k * k + h * h)
-    l = 1 - np.sqrt(1 - k * k - h * h)
+    l = 1.0 - np.sqrt(1.0 - k * k - h * h)
 
     if e == 0:
         # In circular case, phase zero is arbitrarily chosen as the point on orbit
@@ -243,13 +243,13 @@ def elements(
     #  -pi/2 0 -1   pi    0
     #
 
-    Mdot = 2 * np.pi / period
+    Mdot = 2.0 * np.pi / period
     omega = np.arctan2(h, k)
     # Calculate eccentric anomaly and mean anomaly at midtransit.
     Emid = (
         np.pi
-        - np.arcsin(k * e / np.sqrt(k * k + h * h * (1 - e * e)))
-        - np.arctan2(k, -h * np.sqrt(1 - k * k - h * h))
+        - np.arcsin(k * e / np.sqrt(k * k + h * h * (1.0 - e * e)))
+        - np.arctan2(k, -h * np.sqrt(1.0 - k * k - h * h))
     )
     Mmid = Emid - e * np.sin(Emid)
     # Ten second tolerance (assuming time unit is day).
@@ -309,13 +309,13 @@ def circleangle(
         # Planet covers center of star.
         a, b = np.searchsorted(r, [p - z, p + z], side="right")
         answer[:a] = np.pi
-        answer[a:b] = np.arccos((r[a:b] * r[a:b] + z * z - p * p) / (2 * z * r[a:b]))
+        answer[a:b] = np.arccos((r[a:b] * r[a:b] + z * z - p * p) / (2.0 * z * r[a:b]))
         answer[b:] = 0.0
     else:
         # Planet does not cover center of star.
         a, b = np.searchsorted(r, [z - p, z + p], side="right")
         answer[:a] = 0.0
-        answer[a:b] = np.arccos((r[a:b] * r[a:b] + z * z - p * p) / (2 * z * r[a:b]))
+        answer[a:b] = np.arccos((r[a:b] * r[a:b] + z * z - p * p) / (2.0 * z * r[a:b]))
         answer[b:] = 0.0
     return answer
 
@@ -380,7 +380,7 @@ def ellipseangle(
         return answer
 
     asquared = a * a
-    b = a * np.sqrt(1.0 - zsquared / (1 - asquared))
+    b = a * np.sqrt(1.0 - zsquared / (1.0 - asquared))
 
     # Square of eccentricity is asquared / bsquared - 1
     A = zsquared / (1.0 - asquared - zsquared)
@@ -392,7 +392,7 @@ def ellipseangle(
     answer[:bound1] = np.pi
 
     # The ellipse and the circle are disjoint
-    answer[:bound2] = 0
+    answer[:bound2] = 0.0
 
     # The ellipse and the circle intersect
     indices = slice(bound1, bound3) if bound1 > bound2 else slice(bound2, bound3)
@@ -411,6 +411,6 @@ def ellipseangle(
     )
 
     # The circle encloses the ellipse
-    answer[bound3:] = 0
+    answer[bound3:] = 0.0
 
     return answer
