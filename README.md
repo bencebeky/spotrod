@@ -1,25 +1,6 @@
 # spotrod
 ### A semi-analytic model for transits of spotted stars.
 
-```
-Copyright 2013, 2014 Bence Béky
-
-This file is part of Spotrod.
-
-Spotrod is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Spotrod is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
-```
-
 ## Contents
 
 This repository contains `spotrod`, a semi-analytic model for transits of spotted stars. The model is implemented in C and comes with Python API. The following files and directories are included in the root directory:
@@ -65,3 +46,24 @@ $ python setup.py clean --all
 ## Citation
 
 If you use `spotrod` in a publication, please consider citing [Béky, Kipping, and Holman, 2014, arXiv:1407.4465](http://adsabs.harvard.edu/abs/2014arXiv1407.4465B).
+
+## License
+
+```
+Copyright 2013, 2014 Bence Béky
+
+This file is part of Spotrod.
+
+Spotrod is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Spotrod is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Spotrod.  If not, see <http://www.gnu.org/licenses/>.
+```
