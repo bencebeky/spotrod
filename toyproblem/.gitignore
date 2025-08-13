@@ -1,6 +1,0 @@
-# Build products do not go into the repository.
-build/
-toyc.so
-toycython.c
-toycython.so
-toypython.pyc
