@@ -1,4 +1,12 @@
 """
+spotrod: a semi-analytic model for transits of spotted stars
+
+This module implements the functions described in Béky, Kipping, and Holman,
+2014, MNRAS, 442, 3686. They can be used to model the transit lightcurve of an
+extrasolar planet orbiting a star with spots on its surface.
+"""
+
+"""
 Copyright 2013, 2014 Bence Béky
 
 This file is part of Spotrod.
@@ -35,43 +43,40 @@ def integratetransit(
     spotcontrast: NDArray[np.float64],
     planetangle: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    """
-    Calculate integrated flux of a star if it is transited by a planet
-    of radius p*R_star, at projected position (planetx, planety)
-    measured in R_star units.
-    Flux is normalized to out-of-transit flux.
-    This algorithm works by integrating over concentric rings,
-    the number of which is controlled by n. Use n=1000 for fair results.
-    Planetx is the coordinate perpendicular to the transit chord
-    normalized to stellar radius units, and planety is the one
-    parallel to the transit chord, in a fashion such that it increases
-    throughout the transit.
-    We assume that the one-dimensional arrays spotx, spoty, spotradius
-    and spotcontrast have the same length: the number of the spots.
+    """Calculate integrated flux of a spotty star transited by a planet.
 
     Input parameters:
 
-    m             length of time series
-    n             number of concentric rings
-    k             number of spots
-    planet[xy]    planetary center coordinates in stellar radii in sky-projected coordinate system [m]
-    z             planetary center distance from stellar disk center in stellar radii     (cached) [m]
-    p             planetary radius in stellar radii, scalar
-    r             radii of integration annuli in stellar radii, non-decreasing            (cached) [n]
-    f             2.0 * limb darkening at r[i] * width of annulus i                       (cached) [n]
-    spotx, spoty  spot center coordinates in stellar radii in sky-projected coordinate system      [k]
-    spotradius    spot radius in stellar radii [k]
-    spotcontrast  spot contrast [k]
-    planetangle   value of [circleangle(r, p, z[i]) for i in range(m)]                 (cached) [m,n]
+      planet[xy]    planetary center coordinates                         [m]
+      z             planetary center distance from stellar disk center   [m]
+      p             planetary radius                                     scalar
+      r             radii of integration annuli, increasing              [n]
+      f             limb darkening at r[i] * width of annulus i          [n]
+      spotx, spoty  spot center coordinates                              [k]
+      spotradius    spot radius                                          [k]
+      spotcontrast  spot contrast                                        [k]
+      planetangle   value of [circleangle(r, p, z[i]) for i in range(m)] [m,n]
 
-    (cached) means the parameter is redundant, and could be calculated from
-    other parameters, but storing it and passing it to this routine speeds up
-    iterative execution (fit or MCMC). Note that we do not take limb darkening
-    coefficients, all we need is f.
+    `m` is the number of time instances
+    `n` is the number of annuli
+    `k` is the number of spots
+
+    `planetx`, `planety`, `z`, `p`, `spotx`, `spoty` are in sky-projected
+    coordinate system.
+
+    `planetx`, `planety`, `z`, `p`, `r`, `spotx`, `spoty` and `spotradius` are
+    measured in stellar radii. In particular, `r` has values in [0.0, 1.0].
+
+    `planetx` is the coordinate perpendicular to the transit chord normalized to
+    stellar radius units, and `planety` is the one parallel to the transit
+    chord. Conventinally `planety` increases with time throughout the transit.
+
+    The result is normalized for out-of-transit flux. Therefore `f` may have an
+    arbitrary scaling factor, which will cancel out.
 
     Output parameters:
 
-    answer        model lightcurve, with oot=1.0 [m]
+      model lightcurve, with oot=1.0                                     [m]
     """
 
     # Number of instances
@@ -203,16 +208,17 @@ def elements(
 ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Calculate orbital elements eta and xi.
 
-    Input:
+    Input parameters:
 
-    deltaT   time minus midtransit epoch [n]
-    period   planetary period
-    a        semimajor axis
-    k, h     e cos omega, e sin omega respectively (omega is periastron epoch)
+      deltaT     time minus midtransit epoch, array of lenght `n`
+      period     planetary period
+      a          semimajor axis
+      k          e cos omega (omega is periastron epoch)
+      h          e sin omega
 
-    Output:
+    Output parameters:
 
-    eta, xi  eta and xi at times deltaT [2, n]
+      eta, xi    eta and xi at times deltaT, length `n` each
     """
 
     n = deltaT.size
@@ -223,25 +229,12 @@ def elements(
     l = 1.0 - np.sqrt(1.0 - k * k - h * h)
 
     if e == 0:
-        # In circular case, phase zero is arbitrarily chosen as the point on orbit
-        # towards the observer.
         lam = 0.5 * np.pi + 2 * np.pi * deltaT / period
         # In top view, eta is the coordinate towards the observer,
         # and xi is the perpendicular one.
         eta = a * np.sin(lam)
         xi = a * np.cos(lam)
         return eta, xi
-
-    # ke = k cos E - h sqrt(1-e^2) sin E
-    # ke / sqrt(k^2+h^2(1-e^2)) = sin a cos E + cos a sin E
-    # ke / sqrt(k^2+h^2(1-e^2)) = sin (a+E)
-    #
-    # omega  k  h   E     a
-    #  0     1  0   pi/2  pi/2
-    #  pi/2  0  1   0     pi
-    #  pi   -1  0   -pi/2 -pi/2
-    #  -pi/2 0 -1   pi    0
-    #
 
     Mdot = 2.0 * np.pi / period
     omega = np.arctan2(h, k)
@@ -278,25 +271,23 @@ def elements(
 def circleangle(
     r: NDArray[np.float64], p: np.float64, z: np.float64
 ) -> NDArray[np.float64]:
-    """circleangle(r, p, z)
+    """Calculate half central angle of arc of circle covered by planet.
 
-    Calculate half central angle of the arc of circle of radius r
-    (which concentrically spans the inside of the star during integration)
-    that is inside a circle of radius p (planet)
-    with separation of centers z.
-    This is a zeroth order homogeneous function, that is,
-    circleangle(alpha*r, alpha*p, alpha*z) = circleangle(r, p, z).
+    Input parameters:
 
-    This version uses a binary search on the sorted r.
+      r  radii of circles, increasing, array of length `n`
+      p  planetary radius
+      z  distance of planetary center and center of circle
 
-    Input:
-      r  one dimensional numpy array, must be increasing
-      p  scalar
-      z  scalar
-    They should all be non-negative, but there is no other restriction.
+    The planet is modeled as a circular disk. Input values are in sky-projected
+    coordinate system, and are measured in stellar radii. In particular, `r`
+    has values in [0.0, 1.0].
 
-    Output:
-      circleangle  one dimensional numpy array, same size as r
+    Input values should all be non-negative.
+
+    Output parameters:
+
+      half central angles, array of size `n`
     """
 
     n = r.size
@@ -323,31 +314,30 @@ def circleangle(
 def ellipseangle(
     r: NDArray[np.float64], a: np.float64, z: np.float64
 ) -> NDArray[np.float64]:
-    """Calculate half central angle of the arc of circle of radius r
-    (which concentrically spans the inside of the star during integration)
-    that is inside an ellipse of semi-major axis a with separation of centers z.
-    The orientation of the ellipse is so that the center of the circle lies on
-    the continuation of the minor axis. This is the orientation if the ellipse
-    is a circle on the surface of a sphere viewed in projection, and the circle
-    is concentric with the projection of the sphere.
-    b is calculated from a and z, assuming projection of a circle of radius a
-    on the surface of a unit sphere. If a and z are not compatible, a is
-    clipped. This is not zeroth order homogeneous function, because it
-    calculates b based on a circle of radius a living on the surface of the unit
-    sphere. r is an array, a, and z are scalars. They should all be
-    non-negative. We store the result on the n double positions starting with
-    *answer.
+    """Calculate half central angle of arc of circle covered by ellipse.
 
-    Input:
+    Calculate the half central angle of the arc that is the intersection of a
+    circle that is concentric with the stellar disk and an ellipse that is the
+    projected view of a circular spot on the surface of the star.
 
-    r        radius of circle [n]
-    a        semi-major axis of ellipse, non-negative
-    z        distance between centers of circle and ellipse,
-             non-negative and at most 1
+    Input parameters:
 
-    Output:
+      r        radius of circle, array of length `n`
+      a        semi-major axis of ellipse, non-negative
+      z        distance between centers of circle and ellipse,
+               non-negative and at most 1.0
 
-    answer   half central angle of arc of circle that lies inside ellipes [n].
+    Input values are measured in stellar radii. In particular, `r` has values in
+    [0.0, 1.0].
+
+    Input values are in sky view. Note that the semi-major axis of the ellipse
+    is the physical radius of the stellar spot, there is no shortening. The
+    semi-minor axis, however, is the projected length of the physical radius in
+    the perpendicular direction. It is calculated from `a` and `z`.
+
+    Output parameters:
+
+      half central angle of arc of circle covered by ellipse, array of length `n`
     """
 
     n = r.size
