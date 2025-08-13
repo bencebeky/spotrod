@@ -6,4 +6,4 @@ spotrod*.so
 # This file can be downloaded from MAST (Mikulski Archive for Space Telescopes),
 # at http://archive.stsci.edu/missions/kepler/lightcurves/0107/010748390/kplr010748390-2011145075126_slc.fits.
 kplr010748390-2011145075126_slc.fits
-*~
+__pycache__
