@@ -1,23 +1,13 @@
-# spotrod
-### A semi-analytic model for transits of spotted stars.
+# spotrod: A semi-analytic model for transits of spotted stars
 
 ## Contents
 
-This repository contains `spotrod`, a semi-analytic model for transits of spotted stars. The model is implemented in C and comes with Python API. The following files and directories are included in the root directory:
-
-- [toyproblem](toyproblem) A toy problem benchmarking Python, Cython, and C implementations of circleangle(), the function calculating $\beta$;
-- [COPYING](COPYING) the GNU General Public License;
-- [Makefile](Makefile) makefile for generating toycython.so and toyc.so;
-- [README.md](README.md) this file;
-- [spotrod.c](spotrod.c) C implementation of the model;
-- [spotrod.h](spotrod.h) headers for functions in spotrod.c;
-- [spotrod-python-wrapper.c](spotrod-python-wrapper.c) C code wrapping spotrod.c in the numpy C API;
-- [spotrod-setup.py](spotrod-setup.py) a Python script for compiling spotrod.so;
-- [test.py](test.py) a minimal script generating a model lightcurve;
-- [test.png](test.png) output of minimal script;
-- [mcmc.py](mcmc.py) an MCMC simulation using the [emcee](http://dan.iel.fm/emcee/) package, creating an animation.
+This repository contains `spotrod`, a semi-analytic model to calculate
+lightcurves of planetary transits of spotted stars. The model is implemented in
+pure Python.
 
 ## Installation / Compilation
+
 To install this package, first ensure you have Python and the necessary build tools installed. Clone the repository to your local machine and navigate to the repository directory. Then, 
 run the following command to build and install the package into your current Python environment:  
 
