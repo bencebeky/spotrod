@@ -45,72 +45,8 @@ u2 = 0.038;
 k = 0.216;
 h = 0.133;
 
-filename = "kplr010748390-2011145075126_slc.fits";
-url = "http://archive.stsci.edu/missions/kepler/lightcurves/0107/010748390/" + filename;
-
-# If file does not exist, try downloading it.
-if not os.path.exists(filename):
-  imported_urllib = True;
-  imported_urllib2 = True;
-  imported_requests = True;
-  try:
-    import urllib;
-  except ImportError:
-    imported_urllib = False;
-  try:
-    import urllib2;
-  except ImportError:
-    imported_urllib2 = False;
-  try:
-    import requests;
-  except ImportError:
-    imported_requests = False;
-  if imported_urllib:
-    urllib.urlretrieve(url, filename);
-  elif imported_urllib2:
-    response = urllib2.urlopen(url);
-    with open(filename, 'wb') as f:
-      f.write(response.read());
-  elif imported_requests:
-    r = requests.get(url);
-    with open(filename, "wb") as f:
-      f.write(r.content);
-  else:
-    print "Please download {0:s} manually.".format(filename);
-
-# Read Kepler short cadence data.
-with pyfits.open(filename) as fitsfile:
-  timebkjd = fitsfile[1].data.field("TIME");
-  flux = fitsfile[1].data.field("SAP_FLUX");
-  fluxerr = fitsfile[1].data.field("SAP_FLUX_ERR");
-
-# Only keep transit 28 with some out of transit data.
-mask = numpy.abs(timebkjd-midtransit-28*period) < 0.12 * period;
-mask &= numpy.logical_not(numpy.isnan(flux));
-timebkjd = timebkjd[mask];
-flux = flux[mask];
-fluxerr = fluxerr[mask];
-del mask;
-
-# Identify out of transit data for detrending.
-phase = numpy.mod((timebkjd-midtransit)/period+0.5, 1.0)-0.5;
-oot = numpy.abs(phase) > 0.01002;
-
-# Detrend.
-p = numpy.polyfit(timebkjd[oot], flux[oot], deg=2);
-correction = numpy.polyval(p, timebkjd);
-flux /= correction;
-fluxerr /= correction;
-del correction;
-
-# Throw out some more out of transit data, as we will not need them any more.
-mask = numpy.abs(timebkjd-midtransit-28*period) < 0.02 * period;
-timebkjd = timebkjd[mask];
-flux = flux[mask];
-fluxerr = fluxerr[mask];
-phase = phase[mask];
-oot = oot[mask];
-del mask;
+timebkjd = kepler_data.timebkjd
+flux = kepler_data.flux
 
 # Calculate chi prefactor to be used with MCMC.
 minusoneovertwofluxerrsquared = - 0.5 * numpy.power(fluxerr, -2.0);
