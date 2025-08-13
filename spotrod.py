@@ -71,6 +71,11 @@ def integratetransit(
     stellar radius units, and `planety` is the one parallel to the transit
     chord. Conventinally `planety` increases with time throughout the transit.
 
+    `z` must be consistent with `planetx` and `planety`, and `planetangle` must
+    be consistent with `r`, `p` and `z`. The reason they are taken as an input
+    parameters is to avoid having to recalculate them on every call in case
+    `integratetransit()` is called repeatedly for fitting spot parameters.
+
     The result is normalized for out-of-transit flux. Therefore `f` may have an
     arbitrary scaling factor, which will cancel out.
 
@@ -149,14 +154,18 @@ def integratetransit(
             if spotcenterdistance[spot] == 0.0 or z[t] == 0:
                 planetspotangle = 0.0
             else:
-                planetspotangle = np.arccos(
-                    (
-                        np.power(z[t], 2.0)
-                        + np.power(spotcenterdistance[spot], 2.0)
-                        - dsquared[spot]
-                    )
-                    / (2.0 * z[t] * spotcenterdistance[spot])
-                )
+                arccos = (
+                    np.power(z[t], 2.0)
+                    + np.power(spotcenterdistance[spot], 2.0)
+                    - dsquared[spot]
+                ) / (2.0 * z[t] * spotcenterdistance[spot])
+                # correct rounding errors
+                if arccos > 1.0:
+                    arccos = 1.0
+                elif arccos < -1.0:
+                    arccos = -1.0
+
+                planetspotangle = np.arccos(arccos)
 
             for i in range(n):
                 # Calculate the integrand at r[i]. The geometry is described by
