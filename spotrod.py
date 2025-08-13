@@ -222,6 +222,16 @@ def elements(
     e = np.sqrt(k * k + h * h)
     l = 1 - np.sqrt(1 - k * k - h * h)
 
+    if e == 0:
+        # In circular case, phase zero is arbitrarily chosen as the point on orbit
+        # towards the observer.
+        lam = 0.5 * np.pi + 2 * np.pi * deltaT / period
+        # In top view, eta is the coordinate towards the observer,
+        # and xi is the perpendicular one.
+        eta = a * np.sin(lam)
+        xi = a * np.cos(lam)
+        return eta, xi
+
     # ke = k cos E - h sqrt(1-e^2) sin E
     # ke / sqrt(k^2+h^2(1-e^2)) = sin a cos E + cos a sin E
     # ke / sqrt(k^2+h^2(1-e^2)) = sin (a+E)
