@@ -4,32 +4,45 @@ This repository contains `spotrod`, a semi-analytic model to calculate
 lightcurves of planetary transits of spotted stars. The model is implemented in
 pure Python.
 
-## Installation / Compilation
+## Installation
 
-To install this package, first ensure you have Python and the necessary build tools installed. Clone the repository to your local machine and navigate to the repository directory. Then, 
-run the following command to build and install the package into your current Python environment:  
+Install the latest version of `spotrod` using `pip`:
 
 ```
-$ pip install .
-```
-
-This command will automatically handle dependencies and compile any C extensions. If you prefer an editable install for development, use: 
-  
-```
-$ pip install -e .
+pip install spotrod
 ```
 
-This setup allows you to make changes to the codebase and see the effects without reinstalling.
+## Usage
 
-To compile the package without installing it into the currently activated Python environment run:
-```
-$ python setup.py build
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+import spotrod
+
+time = np.linspace(-0.1, 0.1, 200)
+eta, xi = spotrod.elements(time, period=5, a=14, k=0.0, h=0.0)
+
+planetx = np.zeros(time.size)
+planety = -xi
+
+r = np.linspace(0.01, 0.99, 1000)
+p = 0.05
+z = np.sqrt(planetx * planetx + planety * planety)
+planetangle = np.array([spotrod.circleangle(r, p, z[i]) for i in range(z.size)])
+
+f = np.ones(r.size)
+spotx = np.array([0.05])
+spoty = np.array([0.35])
+spotradius = np.array([0.2])
+spotcontrast = np.array([0.5])
+prediction = spotrod.integratetransit(
+    planetx, planety, z, p, r, f, spotx, spoty, spotradius, spotcontrast, planetangle
+)
+
+plt.plot(time, prediction)
 ```
 
-To clean up (some of) the build process products run:
-```
-$ python setup.py clean --all
-```
+See [examples](examples) directory for more examples.
 
 ## Citation
 
