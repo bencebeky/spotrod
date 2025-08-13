@@ -23,11 +23,4 @@ license-files = ["LICENSE"]
 Source = "https://github.com/bencebeky/spotrod"
 Issues = "https://github.com/bencebeky/spotrod/issues"
 
-[tool.setuptools]
-packages = ["twine", "twine.commands"]
-include-package-data = true
-
-[tool.setuptools.dynamic]
-version = {attr = "example.__version__"}
-
 [tool.setuptools_scm]
