@@ -307,13 +307,13 @@ def circleangle(
     answer = np.empty(n)
     if p > z:
         # Planet covers center of star.
-        a, b = np.searchsorted(r, [p - z, p + z], side="right")
+        a, b = np.searchsorted(r, [p - z, p + z])
         answer[:a] = np.pi
         answer[a:b] = np.arccos((r[a:b] * r[a:b] + z * z - p * p) / (2.0 * z * r[a:b]))
         answer[b:] = 0.0
     else:
         # Planet does not cover center of star.
-        a, b = np.searchsorted(r, [z - p, z + p], side="right")
+        a, b = np.searchsorted(r, [z - p, z + p])
         answer[:a] = 0.0
         answer[a:b] = np.arccos((r[a:b] * r[a:b] + z * z - p * p) / (2.0 * z * r[a:b]))
         answer[b:] = 0.0
